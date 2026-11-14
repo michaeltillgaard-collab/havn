@@ -407,6 +407,106 @@
                 padding: 1rem 0.5rem;
             }
         }
+            /* =======================================================
+           SPECIEL OPSÆTNING TIL MOBIL I LANDSCAPE (Lav højde)
+           ======================================================= */
+        @media (max-height: 600px) and (orientation: landscape) {
+            /* Gør topbaren mindre */
+            .header {
+                height: 60px;
+                padding: 0.2rem 1rem;
+            }
+            .header-logo {
+                height: 40px;
+            }
+            .clock {
+                font-size: 1.2rem;
+            }
+
+            /* Skift til 50/50 fordeling, da der er bedre plads i bredden */
+            .main {
+                grid-template-columns: 1fr 1fr;
+                padding: 0.5rem;
+                gap: 0.5rem;
+            }
+
+            /* Reducer padding i slides, så indholdet kan være der */
+            .box-title {
+                padding: 0.3rem 0.8rem;
+                font-size: 0.9rem;
+            }
+            .slide-content {
+                padding: 0.8rem;
+            }
+
+            /* Gør teksten lidt mindre generelt */
+            .slide-content p, 
+            .slide-content ul,
+            .contact-grid,
+            .contact-row {
+                font-size: 0.85rem;
+                line-height: 1.4;
+            }
+
+            /* Vejr-sektionen: Gør den mere kompakt */
+            .current-weather {
+                padding: 0.5rem;
+                flex-direction: row;
+                justify-content: space-around;
+            }
+            .current-temp {
+                font-size: 2rem;
+            }
+            .current-details {
+                font-size: 0.8rem;
+            }
+            .current-location {
+                border-top: none;
+                padding-top: 0;
+                margin-top: 0;
+                text-align: left;
+            }
+            .current-location strong {
+                font-size: 0.9rem;
+                display: inline;
+            }
+
+            /* 5-dages prognose: Skift tilbage til vandret række */
+            .forecast-days {
+                flex-direction: row;
+                padding: 0.3rem;
+                gap: 0.3rem;
+                overflow-x: auto;
+            }
+            .forecast-day {
+                flex-direction: column;
+                padding: 0.3rem;
+                min-width: 55px;
+            }
+            .forecast-day .day-name {
+                font-size: 0.7rem;
+                width: auto;
+            }
+            .forecast-day .day-icon {
+                font-size: 1.2rem;
+            }
+            .forecast-day .day-temp {
+                font-size: 0.8rem;
+                width: auto;
+                text-align: center;
+            }
+            .forecast-day .day-wind {
+                font-size: 0.65rem;
+                width: auto;
+                padding: 0.1rem 0.2rem;
+            }
+
+            /* Perlen-slide: Juster billedhøjden, så teksten ikke forsvinder */
+            .slide-content[style*="flex-direction: column"] > div:last-child {
+                height: 40% !important; /* Billederne fylder kun 40% af højden */
+                min-height: 100px !important;
+            }
+        }
     </style>
 </head>
 <body>
