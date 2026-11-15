@@ -898,7 +898,7 @@
             function getArrow(deg) {
                 if (deg === null || deg === undefined) return '';
                 // Vindretning i API'et er den retning vinden KOMMER FRA.
-                const arrows = ['⬇️', '↙️', '⬅️', '↖️', '⬆️', '↗️', '➡️', '↘️'];
+                const arrows = ['N⬇️', 'NØ↙️', 'Ø⬅️', 'SØ↖️', 'S⬆️', 'SV↗️', 'V➡️', 'NV↘️'];
                 const index = Math.round(deg / 45) % 8;
                 return arrows[index];
             }
