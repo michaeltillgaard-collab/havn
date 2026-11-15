@@ -9,7 +9,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            cursor: none; /* Skjul markør i kiosktilstand */
+            cursor: none;
         }
 
         body {
@@ -22,7 +22,6 @@
             flex-direction: column;
         }
 
-        /* Topbjælke */
         .header {
             background: #ffffff;
             padding: 0.5rem 2rem;
@@ -48,7 +47,6 @@
             color: #005b9f;
         }
 
-        /* Hovedindholdsområde - 3/4 og 1/4 fordeling */
         .main {
             flex: 1;
             display: grid;
@@ -58,7 +56,6 @@
             overflow: hidden;
         }
 
-        /* Fælles boks-styling */
         .box {
             background: #ffffff;
             border-radius: 12px;
@@ -81,7 +78,6 @@
             gap: 0.5rem;
         }
 
-        /* Venstre side: Slideshow container */
         .slideshow-container {
             position: relative;
             width: 100%;
@@ -111,7 +107,6 @@
             z-index: 2;
         }
 
-        /* Standard indhold i slides */
         .slide-content {
             flex: 1;
             padding: 1.5rem;
@@ -120,11 +115,10 @@
             flex-direction: column;
         }
 
-        /* NYT: Specifik styling KUN til Slide 1 (Kontakt + Meddelelser) */
         .slide-content.split-layout {
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* Skubber meddelelser i bund */
+            justify-content: space-between;
             padding: 1.5rem;
         }
 
@@ -132,7 +126,6 @@
             flex: 1; 
         }
 
-        /* NYT: Styling til meddelelsesboksen */
         .notice-board {
             background: #fffbeb;
             border: 2px solid #f59e0b;
@@ -140,7 +133,7 @@
             padding: 1rem;
             box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
             flex-shrink: 0; 
-            margin-top: 1rem; /* Giver luft til kontaktinfo ovenover */
+            margin-top: 1rem;
         }
         
         .notice-board h3 {
@@ -198,7 +191,6 @@
             font-weight: 500;
         }
 
-        /* Kontakt-grid */
         .contact-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -234,7 +226,6 @@
             margin-bottom: 0.2rem;
         }
 
-        /* Sikkerheds-side styling */
         .emergency-box {
             background: #fff3f3;
             border: 2px solid #e53e3e;
@@ -278,7 +269,6 @@
             color: #005b9f;
         }
 
-        /* Højre side: Vejr */
         .weather-section {
             display: flex;
             flex-direction: column;
@@ -289,7 +279,6 @@
             box-shadow: none;
         }
 
-        /* Aktuelt vejr-boks */
         .current-weather {
             background: #ffffff;
             border-radius: 12px;
@@ -355,7 +344,6 @@
             margin-bottom: 0.2rem;
         }
 
-        /* 5-dages prognose */
         .forecast-container {
             flex: 1;
         }
@@ -418,7 +406,6 @@
             text-align: center;
         }
 
-        /* Kort-specifik styling */
         .map-container {
             flex: 1;
             display: flex;
@@ -436,7 +423,6 @@
             border-radius: 0 0 12px 12px;
         }
 
-        /* Responsivitet */
         @media (max-width: 1100px) {
             .main {
                 grid-template-columns: 1fr;
@@ -462,9 +448,6 @@
             }
         }
         
-        /* =======================================================
-           SPECIEL OPSÆTNING TIL MOBIL I LANDSCAPE (Lav højde)
-           ======================================================= */
         @media (max-height: 600px) and (orientation: landscape) {
             .header {
                 height: 60px;
@@ -585,7 +568,6 @@
             <!-- Slide 1: Kontaktinformation & Meddelelser -->
             <div class="slide active" data-slide="0">
                 <div class="box-title">📞 Kontaktinformation</div>
-                <!-- Bruger split-layout klassen -->
                 <div class="slide-content split-layout">
                     <div class="contact-top">
                         <div class="contact-grid">
@@ -629,11 +611,9 @@
                         </div>
                     </div>
                     
-                    <!-- Meddelelsesboks -->
                     <div class="notice-board">
                         <h3>📢 Aktuelle meddelelser</h3>
                         <ul>
-                            <!-- RET TEKSTEN HERUNDER, NÅR DER ER NYE BESKEDER -->
                             <li>Betalingsautomaten ved Perlen var ude af drift i dag i en times tid frem til kl. 11.30.</li>
                             <li>Der er kapsejlads i dag fra kl. 13.00 - undgå sejlads i det markerede område.</li>
                         </ul>
@@ -652,11 +632,7 @@
             <!-- Slide 3: Faciliteter -->
             <div class="slide" data-slide="2">
                 <div class="box-title">⚓ Faciliteter</div>
-                
-                <!-- ÆNDRET: Gør slide-content til en flex-container i kolonner -->
                 <div class="slide-content" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
-                    
-                    <!-- Tekst-delen -->
                     <div style="flex: 1;">
                         <p><strong>Velkommen til Aarøsund Lystbådehavn</strong></p>
                         <p>Havnen tilbyder en række faciliteter for både gæstesejlere, autocampere og fastliggere:</p>
@@ -670,19 +646,16 @@
                             <li>⛽ Handerslev Kommune driver et Diesel tankanlæg i Aarøsund Havn.</li>
                         </ul>
                     </div>
-
-                    <!-- Billed-delen (fylder i bunden) -->
                     <div style="display: flex; gap: 1rem; width: 100%; height: 45%; min-height: 180px; margin-top: 1rem;">
                         <img src="drone1.jpg" alt="Aarøsund Lystbådehavn fra luften" style="width: 50%; height: 100%; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #e1e8f0;">
                         <img src="drone2.jpg" alt="Aarøsund Lystbådehavn fra luften" style="width: 50%; height: 100%; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #e1e8f0;">
                     </div>
-                    
                 </div>
             </div>
+
             <!-- Slide 4: Perlen -->
             <div class="slide" data-slide="3">
                 <div class="box-title">🏠 Perlen – Det åbne klubhus</div>
-                
                 <div class="slide-content" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
                     <div style="flex: 1;">
                         <p><strong>Perlen</strong> er havnens hyggelige samlingspunkt og fungerer som havnekontor.</p>
@@ -692,7 +665,6 @@
                             <em>Perlen er åben hele året.</em>
                         </p>
                     </div>
-
                     <div style="display: flex; gap: 1rem; width: 100%; height: 50%; min-height: 200px; margin-top: 1rem;">
                         <img src="perlen1.jpg" alt="Perlen klubhus" style="width: 50%; height: 100%; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #e1e8f0;">
                         <img src="perlen2.jpg" alt="Perlen indvendig" style="width: 50%; height: 100%; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #e1e8f0;">
@@ -704,25 +676,10 @@
             <div class="slide" data-slide="4">
                 <div class="box-title">🎬 Dronevideo over havnen</div>
                 <div class="slide-content" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 1.5rem;">
-                    <p style="font-size: 1.1rem; margin-bottom: 1rem;">
-                        Oplev Aarøsund Lystbådehavn fra luften.
-                    </p>
+                    <p style="font-size: 1.1rem; margin-bottom: 1rem;">Oplev Aarøsund Lystbådehavn fra luften.</p>
                     <div style="width: 100%; max-width: 900px; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
-                        <iframe 
-                            width="100%" 
-                            height="100%" 
-                            src="https://www.youtube.com/embed/302-aLFLY6U?autoplay=1&mute=1&loop=1&playlist=302-aLFLY6U" 
-                            title="YouTube video player" 
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                            referrerpolicy="strict-origin-when-cross-origin" 
-                            allowfullscreen
-                            style="border: none;">
-                        </iframe>
+                        <iframe width="100%" height="100%" src="https://www.youtube.com/embed/302-aLFLY6U?autoplay=1&mute=1&loop=1&playlist=302-aLFLY6U" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="border: none;"></iframe>
                     </div>
-                    
-                        <!--Videoen afspilles automatisk uden lyd.-->
-                    
                 </div>
             </div>
 
@@ -734,7 +691,6 @@
                         <span class="number">112</span>
                         <span class="label">Alarm – Brand, politi, ambulance</span>
                     </div>
-                    
                     <div class="contact-row">
                         <span class="name">Politi (ikke akut)</span>
                         <span class="number">114</span>
@@ -751,7 +707,6 @@
                         <span class="name">Havnemester (Lars Callesen)</span>
                         <span class="number">+45 74 58 48 63</span>
                     </div>
-
                     <p style="margin-top: 1.5rem; font-size: 0.95rem; color: #475569;">
                         <strong>Sikkerhedsudstyr:</strong> Havnen er udstyret med en hjertestarter som er ophængt på den vestlige side af servicebygningen. Ved alle broer er der oplyste redningsstiger. 
                         Følg altid havnens sikkerhedsregler og hold øje med vejrudsigten.
@@ -759,19 +714,21 @@
                 </div>
             </div>
 
-        </div>
             <!-- Slide 7: Sejladsvejr (Graf) -->
             <div class="slide" data-slide="6">
-                <div class="box-title">⛵ Sejladsvejr – Vind & Nedbør</div>
+                <div class="box-title">⛵ Sejladsvejr – Vind, Nedbør & Retning</div>
                 <div class="slide-content" style="display: flex; flex-direction: column; height: 100%;">
                     <p style="margin-bottom: 0.5rem; font-size: 1rem; color: #64748b;">
-                        Timebaseret prognose for de næste 4 dage. Blå linje = vind (m/s). Lyseblå søjler = nedbør (mm).
+                        Timebaseret prognose for de næste 4 dage. Blå linje = vind (m/s). Lyseblå søjler = nedbør (mm). Pile = vindretning.
                     </p>
                     <div style="flex: 1; position: relative; width: 100%; min-height: 250px;">
                         <canvas id="sailingChart"></canvas>
                     </div>
                 </div>
             </div>
+
+        </div> <!-- LUKKER SLIDESHOW CONTAINER KORREKT HER -->
+
         <!-- Højre side: Vejr -->
         <section class="weather-section">
             <div class="current-weather">
@@ -826,7 +783,6 @@
             showSlide(currentSlide);
         }
 
-        // Skift slide hvert 10. sekund (som du har sat det)
         setInterval(nextSlide, 10000);
 
         // ==================== Vejrdata ====================
@@ -844,8 +800,6 @@
                 
                 updateForecast(data.daily);
                 updateCurrentFromHourly(data.hourly);
-                
-                // NYT: Tegn sejladsgrafen
                 updateSailingChart(data.hourly);
                 
                 document.getElementById('currentUpdate').textContent = 'Opdateret: ' + new Date().toLocaleTimeString('da-DK', {hour: '2-digit', minute:'2-digit'});
@@ -899,6 +853,35 @@
         // ==================== Sejladsgraf (Chart.js) ====================
         let sailingChartInstance = null;
 
+        // Custom plugin til at tegne pile i bunden af grafen
+        const windArrowPlugin = {
+            id: 'windArrows',
+            afterDraw: (chart) => {
+                const ctx = chart.ctx;
+                const xAxis = chart.scales.x;
+                const yAxis = chart.scales.y;
+                const dataset = chart.data.datasets[2]; // Vindretnings-datasættet
+                if (!dataset || !dataset.data) return;
+
+                ctx.save();
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                
+                // Vi tegner pilene lidt under x-aksen
+                const yPos = yAxis.bottom + 15; 
+
+                // Vi tegner kun en pil pr. dag (ca. hver 24. time) for ikke at skabe rod
+                const step = 24; 
+                for (let i = 0; i < dataset.data.length; i += step) {
+                    const xPos = xAxis.getPixelForValue(i);
+                    // Tegn pilen
+                    ctx.fillText(dataset.data[i], xPos, yPos);
+                }
+                ctx.restore();
+            }
+        };
+
         function updateSailingChart(hourly) {
             if (!hourly || !hourly.time) return;
 
@@ -909,13 +892,12 @@
             const labels = [];
             const windData = [];
             const rainData = [];
-            const windDirs = []; // NYT: Array til vindretninger
+            const windDirs = [];
 
             // Funktion der omdanner grader til en pil
             function getArrow(deg) {
                 if (deg === null || deg === undefined) return '';
                 // Vindretning i API'et er den retning vinden KOMMER FRA.
-                // Derfor skal pilen pege modsat (f.eks. Nordenvind = pil ned)
                 const arrows = ['⬇️', '↙️', '⬅️', '↖️', '⬆️', '↗️', '➡️', '↘️'];
                 const index = Math.round(deg / 45) % 8;
                 return arrows[index];
@@ -930,7 +912,6 @@
                 windData.push(hourly.windspeed_10m[i]);
                 rainData.push(hourly.precipitation[i] || 0);
                 
-                // NYT: Gem vindretning som en pil
                 const deg = hourly.winddirection_10m[i];
                 windDirs.push(getArrow(deg)); 
             }
@@ -939,7 +920,7 @@
                 sailingChartInstance.data.labels = labels;
                 sailingChartInstance.data.datasets[0].data = windData;
                 sailingChartInstance.data.datasets[1].data = rainData;
-                sailingChartInstance.data.datasets[2].data = windDirs; // Opdater pile
+                sailingChartInstance.data.datasets[2].data = windDirs;
                 sailingChartInstance.update();
                 return;
             }
@@ -971,16 +952,14 @@
                             yAxisID: 'y1'
                         },
                         {
-                            // NYT: Usynligt datasæt til at vise pile i bunden
                             type: 'scatter',
                             label: 'Vindretning',
-                            data: windDirs.map(() => 0), // Placeres ved nul på y-aksen
-                            pointStyle: windDirs, // Bruger tekst/emojis som "punkter"
-                            pointRadius: 15,
-                            pointHoverRadius: 15,
+                            data: windDirs,
+                            pointStyle: windDirs, 
+                            pointRadius: 0, // Vi bruger custom plugin i stedet
                             backgroundColor: 'transparent',
                             borderColor: 'transparent',
-                            clip: false, // Tillad at pile tegnes udenfor selve grafen
+                            clip: false,
                             yAxisID: 'y',
                             showLine: false
                         }
@@ -989,6 +968,9 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: { bottom: 25 } // Giv plads i bunden til pile
+                    },
                     interaction: {
                         mode: 'index',
                         intersect: false,
@@ -996,12 +978,13 @@
                     plugins: {
                         legend: {
                             position: 'top',
-                            labels: { boxWidth: 12, font: { size: 11 } }
+                            labels: { boxWidth: 12, font: { size: 11 }, filter: function(item) {
+                                return item.text !== 'Vindretning'; // Skjul vindretning i legend
+                            } }
                         },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    // Tilføj pil til tooltip for vindhastighed
                                     if (context.dataset.label === 'Vind (m/s)') {
                                         const arrow = windDirs[context.dataIndex];
                                         return `Vind: ${context.raw} m/s ${arrow}`;
@@ -1026,7 +1009,6 @@
                             title: { display: true, text: 'Vind (m/s)', color: '#005b9f', font: { size: 11 } },
                             beginAtZero: true,
                             suggestedMax: 15,
-                            suggestedMin: -2, // Giver plads i bunden til pilene
                             grid: { color: 'rgba(0,0,0,0.05)' }
                         },
                         y1: {
@@ -1039,7 +1021,8 @@
                             grid: { drawOnChartArea: false }
                         }
                     }
-                }
+                },
+                plugins: [windArrowPlugin] // Tilføj vores custom plugin
             });
         }
 
@@ -1073,7 +1056,6 @@
         fetchWeather();
         setInterval(fetchWeather, 30 * 60 * 1000); 
         
-        // Automatisk genindlæsning af siden hvert 10. minut
         setTimeout(function() {
             location.reload();
         }, 600000);
