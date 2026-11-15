@@ -1082,7 +1082,7 @@ async function fetchNotices() {
     // Opret og indsæt script-tagget på siden
     const script = document.createElement('script');
     // Tilføj &callback=... til URL'en, så scriptet ved, hvad det skal kalde
-    script.src = scriptUrl + '?callback=' + callbackName;
+    script.src = scriptUrl + '?jsonp_callback=' + callbackName;
     
     // Hvis scriptet fejler (f.eks. netværksfejl)
     script.onerror = function() {
