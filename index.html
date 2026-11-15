@@ -1052,17 +1052,18 @@
             document.getElementById('currentRain').textContent = `${rain} mm`;
             document.getElementById('currentHumidity').textContent = `${humidity} %`;
         }
-
         // ==================== Hent meddelelser fra Google Sheet (JSONP) ====================
         function fetchNotices() {
-            // INDSÆT DIN NYE WEB APP URL HER (den der slutter på /exec)
-            const scriptUrl = 'https://script.google.com/macros/s/AKfycbzV3hFlMxYyoBUlhVaxpgrZxQZ5ZaACxn4ah53mOA4LaWexljqcBiYHLiwFVmFOHBfvFA/exec';
+            // Din nuværende /exec URL
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbzdoOKAtQkFGcIqsxvpjxV8eNmIYHdkPVoSJvpT5QSXFtMjSAAiUv0MgqitRyKojbt6bQ/exec';
             
             // Opret et unikt navn til vores callback-funktion
             const callbackName = 'handleNotices_' + Math.round(100000 * Math.random());
             
             // Definer den funktion, som scriptet kalder, når det er indlæst
             window[callbackName] = function(messages) {
+                console.log("Data modtaget fra Google:", messages); // Til fejlfinding
+                
                 const listContainer = document.getElementById('noticeList');
                 if (listContainer) {
                     listContainer.innerHTML = ''; // Ryd listen
@@ -1075,17 +1076,21 @@
                     } else {
                         listContainer.innerHTML = '<li>Ingen aktuelle meddelelser.</li>';
                     }
+                } else {
+                    console.error("Kunne ikke finde elementet med id 'noticeList'");
                 }
+                
                 // Ryd op: fjern script-tagget og slet den midlertidige funktion
-                if (script.parentNode) {
-                    script.parentNode.removeChild(script);
+                const scriptElement = document.getElementById(callbackName);
+                if (scriptElement && scriptElement.parentNode) {
+                    scriptElement.parentNode.removeChild(scriptElement);
                 }
                 delete window[callbackName];
             };
 
             // Opret og indsæt script-tagget på siden
             const script = document.createElement('script');
-            // Tilføj &callback=... til URL'en, så scriptet ved, hvad det skal kalde
+            script.id = callbackName; // Giv scriptet et ID, så vi kan fjerne det igen
             script.src = scriptUrl + '?callback=' + callbackName;
             
             // Hvis scriptet fejler (f.eks. netværksfejl)
@@ -1095,8 +1100,9 @@
                 if (listContainer) {
                     listContainer.innerHTML = '<li>Meddelelser er ikke tilgængelige i øjeblikket.</li>';
                 }
-                if (script.parentNode) {
-                    script.parentNode.removeChild(script);
+                const scriptElement = document.getElementById(callbackName);
+                if (scriptElement && scriptElement.parentNode) {
+                    scriptElement.parentNode.removeChild(scriptElement);
                 }
                 delete window[callbackName];
             };
