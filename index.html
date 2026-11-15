@@ -1107,12 +1107,12 @@
                 delete window[callbackName];
             };
 
-            document.body.appendChild(script);
-        }
-
-        // Kald funktionerne, når siden indlæses
-        fetchNotices();
-        fetchWeather();
+                    // Kald funktionerne, når siden indlæses
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchNotices();
+            fetchWeather();
+        });
+        
         setInterval(fetchWeather, 30 * 60 * 1000); 
         
         setTimeout(function() {
