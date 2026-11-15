@@ -1053,33 +1053,49 @@
             document.getElementById('currentHumidity').textContent = `${humidity} %`;
         }
 async function fetchNotices() {
-    // INDSÆT DIN NYE WEB APP URL HER:
-    const sheetUrl = 'https://script.google.com/macros/s/AKfycbxtnOgfAa2b1ZwwsZ3mDpy0-oXaDP5SF0DrOwTqwrLs2cN1rxhhadEDu2KWzbXKZj9_/exec';
+    // INDSÆT DIN NYE WEB APP URL HER (den der slutter på /exec)
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbyfNdZeIuJY5xORy5gPmYKH3-thcIeGCqN57M1Iorf0J9QE2e68kbtrXS2CuLGybMViUA/exec';
     
-    try {
-        const response = await fetch(sheetUrl);
-        if (!response.ok) throw new Error('Kunne ikke hente meddelelser');
-        
-        // Da scriptet nu returnerer JSON, parser vi det direkte
-        const messages = await response.json();
-        
+    // Opret et unikt navn til vores callback-funktion
+    const callbackName = 'handleNotices_' + Math.round(100000 * Math.random());
+    
+    // Definer den funktion, som scriptet kalder, når det er indlæst
+    window[callbackName] = function(messages) {
         const listContainer = document.getElementById('noticeList');
-        if (!listContainer) return;
-        
-        listContainer.innerHTML = '';
-        
-        messages.forEach(message => {
-            const li = document.createElement('li');
-            li.textContent = message;
-            listContainer.appendChild(li);
-        });
-    } catch (error) {
-        console.error('Fejl ved hentning af meddelelser:', error);
+        if (listContainer) {
+            listContainer.innerHTML = ''; // Ryd listen
+            if (messages && messages.length > 0) {
+                messages.forEach(message => {
+                    const li = document.createElement('li');
+                    li.textContent = message;
+                    listContainer.appendChild(li);
+                });
+            } else {
+                listContainer.innerHTML = '<li>Ingen aktuelle meddelelser.</li>';
+            }
+        }
+        // Ryd op: fjern script-tagget og slet den midlertidige funktion
+        document.body.removeChild(script);
+        delete window[callbackName];
+    };
+
+    // Opret og indsæt script-tagget på siden
+    const script = document.createElement('script');
+    // Tilføj &callback=... til URL'en, så scriptet ved, hvad det skal kalde
+    script.src = scriptUrl + '?callback=' + callbackName;
+    
+    // Hvis scriptet fejler (f.eks. netværksfejl)
+    script.onerror = function() {
+        console.error('Fejl ved indlæsning af meddelelser via JSONP.');
         const listContainer = document.getElementById('noticeList');
         if (listContainer) {
             listContainer.innerHTML = '<li>Meddelelser er ikke tilgængelige i øjeblikket.</li>';
         }
-    }
+        document.body.removeChild(script);
+        delete window[callbackName];
+    };
+
+    document.body.appendChild(script);
 }
 
 // Kald funktionen, når siden indlæses
