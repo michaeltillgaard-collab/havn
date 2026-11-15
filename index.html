@@ -1052,7 +1052,8 @@
             document.getElementById('currentRain').textContent = `${rain} mm`;
             document.getElementById('currentHumidity').textContent = `${humidity} %`;
         }
-async function fetchNotices() {
+// ==================== Hent meddelelser fra Google Sheet (JSONP) ====================
+function fetchNotices() {
     // INDSÆT DIN NYE WEB APP URL HER (den der slutter på /exec)
     const scriptUrl = 'https://script.google.com/macros/s/AKfycbzV3hFlMxYyoBUlhVaxpgrZxQZ5ZaACxn4ah53mOA4LaWexljqcBiYHLiwFVmFOHBfvFA/exec';
     
@@ -1075,7 +1076,9 @@ async function fetchNotices() {
             }
         }
         // Ryd op: fjern script-tagget og slet den midlertidige funktion
-        document.body.removeChild(script);
+        if (script.parentNode) {
+            script.parentNode.removeChild(script);
+        }
         delete window[callbackName];
     };
 
@@ -1091,9 +1094,14 @@ async function fetchNotices() {
         if (listContainer) {
             listContainer.innerHTML = '<li>Meddelelser er ikke tilgængelige i øjeblikket.</li>';
         }
-        document.body.removeChild(script);
+        if (script.parentNode) {
+            script.parentNode.removeChild(script);
+        }
         delete window[callbackName];
     };
+
+    document.body.appendChild(script);
+}
 
     document.body.appendChild(script);
 }
