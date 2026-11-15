@@ -1052,62 +1052,60 @@
             document.getElementById('currentRain').textContent = `${rain} mm`;
             document.getElementById('currentHumidity').textContent = `${humidity} %`;
         }
-// ==================== Hent meddelelser fra Google Sheet (JSONP) ====================
-function fetchNotices() {
-    // INDSÆT DIN NYE WEB APP URL HER (den der slutter på /exec)
-    const scriptUrl = 'https://script.google.com/macros/s/AKfycbzV3hFlMxYyoBUlhVaxpgrZxQZ5ZaACxn4ah53mOA4LaWexljqcBiYHLiwFVmFOHBfvFA/exec';
-    
-    // Opret et unikt navn til vores callback-funktion
-    const callbackName = 'handleNotices_' + Math.round(100000 * Math.random());
-    
-    // Definer den funktion, som scriptet kalder, når det er indlæst
-    window[callbackName] = function(messages) {
-        const listContainer = document.getElementById('noticeList');
-        if (listContainer) {
-            listContainer.innerHTML = ''; // Ryd listen
-            if (messages && messages.length > 0) {
-                messages.forEach(message => {
-                    const li = document.createElement('li');
-                    li.textContent = message;
-                    listContainer.appendChild(li);
-                });
-            } else {
-                listContainer.innerHTML = '<li>Ingen aktuelle meddelelser.</li>';
-            }
-        }
-        // Ryd op: fjern script-tagget og slet den midlertidige funktion
-        if (script.parentNode) {
-            script.parentNode.removeChild(script);
-        }
-        delete window[callbackName];
-    };
 
-    // Opret og indsæt script-tagget på siden
-    const script = document.createElement('script');
-    // Tilføj &callback=... til URL'en, så scriptet ved, hvad det skal kalde
-    script.src = scriptUrl + '?callback=' + callbackName;
-    
-    // Hvis scriptet fejler (f.eks. netværksfejl)
-    script.onerror = function() {
-        console.error('Fejl ved indlæsning af meddelelser via JSONP.');
-        const listContainer = document.getElementById('noticeList');
-        if (listContainer) {
-            listContainer.innerHTML = '<li>Meddelelser er ikke tilgængelige i øjeblikket.</li>';
+        // ==================== Hent meddelelser fra Google Sheet (JSONP) ====================
+        function fetchNotices() {
+            // INDSÆT DIN NYE WEB APP URL HER (den der slutter på /exec)
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbzV3hFlMxYyoBUlhVaxpgrZxQZ5ZaACxn4ah53mOA4LaWexljqcBiYHLiwFVmFOHBfvFA/exec';
+            
+            // Opret et unikt navn til vores callback-funktion
+            const callbackName = 'handleNotices_' + Math.round(100000 * Math.random());
+            
+            // Definer den funktion, som scriptet kalder, når det er indlæst
+            window[callbackName] = function(messages) {
+                const listContainer = document.getElementById('noticeList');
+                if (listContainer) {
+                    listContainer.innerHTML = ''; // Ryd listen
+                    if (messages && messages.length > 0) {
+                        messages.forEach(message => {
+                            const li = document.createElement('li');
+                            li.textContent = message;
+                            listContainer.appendChild(li);
+                        });
+                    } else {
+                        listContainer.innerHTML = '<li>Ingen aktuelle meddelelser.</li>';
+                    }
+                }
+                // Ryd op: fjern script-tagget og slet den midlertidige funktion
+                if (script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
+                delete window[callbackName];
+            };
+
+            // Opret og indsæt script-tagget på siden
+            const script = document.createElement('script');
+            // Tilføj &callback=... til URL'en, så scriptet ved, hvad det skal kalde
+            script.src = scriptUrl + '?callback=' + callbackName;
+            
+            // Hvis scriptet fejler (f.eks. netværksfejl)
+            script.onerror = function() {
+                console.error('Fejl ved indlæsning af meddelelser via JSONP.');
+                const listContainer = document.getElementById('noticeList');
+                if (listContainer) {
+                    listContainer.innerHTML = '<li>Meddelelser er ikke tilgængelige i øjeblikket.</li>';
+                }
+                if (script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
+                delete window[callbackName];
+            };
+
+            document.body.appendChild(script);
         }
-        if (script.parentNode) {
-            script.parentNode.removeChild(script);
-        }
-        delete window[callbackName];
-    };
 
-    document.body.appendChild(script);
-}
-
-    document.body.appendChild(script);
-}
-
-// Kald funktionen, når siden indlæses
-fetchNotices();
+        // Kald funktionerne, når siden indlæses
+        fetchNotices();
         fetchWeather();
         setInterval(fetchWeather, 30 * 60 * 1000); 
         
