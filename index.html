@@ -1052,36 +1052,29 @@
             document.getElementById('currentRain').textContent = `${rain} mm`;
             document.getElementById('currentHumidity').textContent = `${humidity} %`;
         }
-// ==================== Hent meddelelser fra Google Sheet ====================
 async function fetchNotices() {
-    // INDSÆT DIT CSV-LINK FRA GOOGLE SHEET HER://
-    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT64K7mbvwRRrmtJOfLJXLOdOp6POxgp7cGBrmnTBg3Pk_4QmevGnDWKDqN1l_IUWk_fWJeeDbMu-Wp/gviz/tq?tqx=out:csv';
+    // INDSÆT DIN NYE WEB APP URL HER:
+    const sheetUrl = 'https://script.google.com/macros/s/AKfycbxtnOgfAa2b1ZwwsZ3mDpy0-oXaDP5SF0DrOwTqwrLs2cN1rxhhadEDu2KWzbXKZj9_/exec';
     
     try {
         const response = await fetch(sheetUrl);
         if (!response.ok) throw new Error('Kunne ikke hente meddelelser');
         
-        const csvText = await response.text();
-        // Split i linjer og fjern eventuelle tomme linjer
-        const rows = csvText.split('\n').map(row => row.trim()).filter(row => row !== '');
+        // Da scriptet nu returnerer JSON, parser vi det direkte
+        const messages = await response.json();
         
         const listContainer = document.getElementById('noticeList');
         if (!listContainer) return;
         
         listContainer.innerHTML = '';
         
-        // Start fra index 1 for at springe en eventuel header over
-        for (let i = 1; i < rows.length; i++) {
-            const message = rows[i].replace(/^"|"$/g, ''); // Fjern citationstegn
-            if (message) {
-                const li = document.createElement('li');
-                li.textContent = message;
-                listContainer.appendChild(li);
-            }
-        }
+        messages.forEach(message => {
+            const li = document.createElement('li');
+            li.textContent = message;
+            listContainer.appendChild(li);
+        });
     } catch (error) {
         console.error('Fejl ved hentning af meddelelser:', error);
-        // Falder tilbage til en standardbesked, hvis Sheetet ikke kan nås
         const listContainer = document.getElementById('noticeList');
         if (listContainer) {
             listContainer.innerHTML = '<li>Meddelelser er ikke tilgængelige i øjeblikket.</li>';
