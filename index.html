@@ -1055,7 +1055,7 @@
 // ==================== Hent meddelelser fra Google Sheet ====================
 async function fetchNotices() {
     // INDSÆT DIT CSV-LINK FRA GOOGLE SHEET HER:
-    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT64K7mbvwRRrmtJOfLJXLOdOp6POxgp7cGBrmnTBg3Pk_4QmevGnDWKDqN1l_IUWk_fWJeeDbMu-Wp/pub?gid=0&single=true&output=csv';
+    const sheetUrl = 'https://corsproxy.io/?' + encodeURIComponent('https://docs.google.com/spreadsheets/d/e/2PACX-1vT64K7mbvwRRrmtJOfLJXLOdOp6POxgp7cGBrmnTBg3Pk_4QmevGnDWKDqN1l_IUWk_fWJeeDbMu-Wp/pub?gid=0&single=true&output=csv');
     
     try {
         const response = await fetch(sheetUrl);
