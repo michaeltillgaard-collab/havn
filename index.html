@@ -835,7 +835,7 @@
 
         async function fetchWeather() {
             try {
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=temperature_2m,precipitation,windspeed_10m,relative_humidity_2m&daily=weathercode,temperature_2m_max,temperature_2m_min,windspeed_10m_max&timezone=Europe/Copenhagen&forecast_days=5&models=metno_seamless&wind_speed_unit=ms`;
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=temperature_2m,precipitation,windspeed_10m,winddirection_10m,relative_humidity_2m&daily=weathercode,temperature_2m_max,temperature_2m_min,windspeed_10m_max&timezone=Europe/Copenhagen&forecast_days=5&models=metno_seamless&wind_speed_unit=ms`;
                 
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('Netværksanmodning mislykkedes');
@@ -905,58 +905,84 @@
             const canvas = document.getElementById('sailingChart');
             if (!canvas) return;
 
-            // Vi tager de næste 96 timer (4 dage) for at holde grafen læsbar
             const hoursToShow = 96;
             const labels = [];
             const windData = [];
             const rainData = [];
+            const windDirs = []; // NYT: Array til vindretninger
+
+            // Funktion der omdanner grader til en pil
+            function getArrow(deg) {
+                if (deg === null || deg === undefined) return '';
+                // Vindretning i API'et er den retning vinden KOMMER FRA.
+                // Derfor skal pilen pege modsat (f.eks. Nordenvind = pil ned)
+                const arrows = ['⬇️', '↙️', '⬅️', '↖️', '⬆️', '↗️', '➡️', '↘️'];
+                const index = Math.round(deg / 45) % 8;
+                return arrows[index];
+            }
 
             for (let i = 0; i < hoursToShow && i < hourly.time.length; i++) {
                 const date = new Date(hourly.time[i]);
-                // Formatér tidspunkt som "Man 14:00"
                 const dayNames = ['Søn', 'Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør'];
                 const label = `${dayNames[date.getDay()]} ${String(date.getHours()).padStart(2, '0')}:00`;
                 labels.push(label);
                 
                 windData.push(hourly.windspeed_10m[i]);
-                // Nedbør kan være null i API'et, så vi sikrer 0
                 rainData.push(hourly.precipitation[i] || 0);
+                
+                // NYT: Gem vindretning som en pil
+                const deg = hourly.winddirection_10m[i];
+                windDirs.push(getArrow(deg)); 
             }
 
-            // Hvis grafen allerede findes, opdaterer vi dataene i stedet for at genskabe den
             if (sailingChartInstance) {
                 sailingChartInstance.data.labels = labels;
                 sailingChartInstance.data.datasets[0].data = windData;
                 sailingChartInstance.data.datasets[1].data = rainData;
+                sailingChartInstance.data.datasets[2].data = windDirs; // Opdater pile
                 sailingChartInstance.update();
                 return;
             }
 
             const ctx = canvas.getContext('2d');
             sailingChartInstance = new Chart(ctx, {
-                type: 'bar', // Basis-type (søjler til nedbør)
+                type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [
                         {
-                            type: 'line', // Vind som linje
+                            type: 'line',
                             label: 'Vind (m/s)',
                             data: windData,
                             borderColor: '#005b9f',
                             backgroundColor: 'rgba(0, 91, 159, 0.1)',
                             borderWidth: 3,
-                            pointRadius: 0, // Ingen prikker for et renere look
-                            tension: 0.3, // Blød kurve
-                            yAxisID: 'y' // Knyttet til venstre akse
+                            pointRadius: 0,
+                            tension: 0.3,
+                            yAxisID: 'y'
                         },
                         {
-                            type: 'bar', // Nedbør som søjler
+                            type: 'bar',
                             label: 'Nedbør (mm)',
                             data: rainData,
                             backgroundColor: 'rgba(126, 200, 240, 0.6)',
                             borderColor: 'rgba(126, 200, 240, 1)',
                             borderWidth: 1,
-                            yAxisID: 'y1' // Knyttet til højre akse
+                            yAxisID: 'y1'
+                        },
+                        {
+                            // NYT: Usynligt datasæt til at vise pile i bunden
+                            type: 'scatter',
+                            label: 'Vindretning',
+                            data: windDirs.map(() => 0), // Placeres ved nul på y-aksen
+                            pointStyle: windDirs, // Bruger tekst/emojis som "punkter"
+                            pointRadius: 15,
+                            pointHoverRadius: 15,
+                            backgroundColor: 'transparent',
+                            borderColor: 'transparent',
+                            clip: false, // Tillad at pile tegnes udenfor selve grafen
+                            yAxisID: 'y',
+                            showLine: false
                         }
                     ]
                 },
@@ -974,8 +1000,13 @@
                         },
                         tooltip: {
                             callbacks: {
-                                title: function(context) {
-                                    return context[0].label;
+                                label: function(context) {
+                                    // Tilføj pil til tooltip for vindhastighed
+                                    if (context.dataset.label === 'Vind (m/s)') {
+                                        const arrow = windDirs[context.dataIndex];
+                                        return `Vind: ${context.raw} m/s ${arrow}`;
+                                    }
+                                    return context.dataset.label + ': ' + context.formattedValue;
                                 }
                             }
                         }
@@ -983,7 +1014,7 @@
                     scales: {
                         x: {
                             ticks: {
-                                maxTicksLimit: 12, // Vis kun ca. 12 tidspunkter på x-aksen for at undgå rod
+                                maxTicksLimit: 12,
                                 font: { size: 10 }
                             },
                             grid: { display: false }
@@ -994,7 +1025,8 @@
                             position: 'left',
                             title: { display: true, text: 'Vind (m/s)', color: '#005b9f', font: { size: 11 } },
                             beginAtZero: true,
-                            suggestedMax: 15, // Giver luft over de typiske vindstyrker
+                            suggestedMax: 15,
+                            suggestedMin: -2, // Giver plads i bunden til pilene
                             grid: { color: 'rgba(0,0,0,0.05)' }
                         },
                         y1: {
@@ -1003,8 +1035,8 @@
                             position: 'right',
                             title: { display: true, text: 'Nedbør (mm)', color: '#7ec8f0', font: { size: 11 } },
                             beginAtZero: true,
-                            suggestedMax: 5, // Nedbør er ofte små mængder
-                            grid: { drawOnChartArea: false } // Undgå at gridlinjer overlapper
+                            suggestedMax: 5,
+                            grid: { drawOnChartArea: false }
                         }
                     }
                 }
