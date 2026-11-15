@@ -899,10 +899,10 @@
         fetchWeather();
         setInterval(fetchWeather, 30 * 60 * 1000); 
         
-        // Automatisk genindlæsning af siden hvert 15. minut
+        // Automatisk genindlæsning af siden hvert 10. minut
         setTimeout(function() {
             location.reload();
-        }, 900000);
+        }, 600000);
 
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.addEventListener('selectstart', e => e.preventDefault());
