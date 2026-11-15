@@ -1107,7 +1107,7 @@
                 delete window[callbackName];
             };
 
-                    // Kald funktionerne, når siden indlæses
+                            // Kald funktionerne, når siden er færdig med at indlæse HTML'en
         document.addEventListener('DOMContentLoaded', function() {
             fetchNotices();
             fetchWeather();
@@ -1121,6 +1121,7 @@
 
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.addEventListener('selectstart', e => e.preventDefault());
+
     </script>
 </body>
 </html>
