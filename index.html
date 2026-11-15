@@ -569,6 +569,7 @@
             }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -759,7 +760,18 @@
             </div>
 
         </div>
-
+            <!-- Slide 7: Sejladsvejr (Graf) -->
+            <div class="slide" data-slide="6">
+                <div class="box-title">⛵ Sejladsvejr – Vind & Nedbør</div>
+                <div class="slide-content" style="display: flex; flex-direction: column; height: 100%;">
+                    <p style="margin-bottom: 0.5rem; font-size: 1rem; color: #64748b;">
+                        Timebaseret prognose for de næste 4 dage. Blå linje = vind (m/s). Lyseblå søjler = nedbør (mm).
+                    </p>
+                    <div style="flex: 1; position: relative; width: 100%; min-height: 250px;">
+                        <canvas id="sailingChart"></canvas>
+                    </div>
+                </div>
+            </div>
         <!-- Højre side: Vejr -->
         <section class="weather-section">
             <div class="current-weather">
@@ -833,6 +845,9 @@
                 updateForecast(data.daily);
                 updateCurrentFromHourly(data.hourly);
                 
+                // NYT: Tegn sejladsgrafen
+                updateSailingChart(data.hourly);
+                
                 document.getElementById('currentUpdate').textContent = 'Opdateret: ' + new Date().toLocaleTimeString('da-DK', {hour: '2-digit', minute:'2-digit'});
                 
             } catch (error) {
@@ -879,6 +894,121 @@
                 `;
                 container.appendChild(dayDiv);
             }
+        }
+
+        // ==================== Sejladsgraf (Chart.js) ====================
+        let sailingChartInstance = null;
+
+        function updateSailingChart(hourly) {
+            if (!hourly || !hourly.time) return;
+
+            const canvas = document.getElementById('sailingChart');
+            if (!canvas) return;
+
+            // Vi tager de næste 96 timer (4 dage) for at holde grafen læsbar
+            const hoursToShow = 96;
+            const labels = [];
+            const windData = [];
+            const rainData = [];
+
+            for (let i = 0; i < hoursToShow && i < hourly.time.length; i++) {
+                const date = new Date(hourly.time[i]);
+                // Formatér tidspunkt som "Man 14:00"
+                const dayNames = ['Søn', 'Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør'];
+                const label = `${dayNames[date.getDay()]} ${String(date.getHours()).padStart(2, '0')}:00`;
+                labels.push(label);
+                
+                windData.push(hourly.windspeed_10m[i]);
+                // Nedbør kan være null i API'et, så vi sikrer 0
+                rainData.push(hourly.precipitation[i] || 0);
+            }
+
+            // Hvis grafen allerede findes, opdaterer vi dataene i stedet for at genskabe den
+            if (sailingChartInstance) {
+                sailingChartInstance.data.labels = labels;
+                sailingChartInstance.data.datasets[0].data = windData;
+                sailingChartInstance.data.datasets[1].data = rainData;
+                sailingChartInstance.update();
+                return;
+            }
+
+            const ctx = canvas.getContext('2d');
+            sailingChartInstance = new Chart(ctx, {
+                type: 'bar', // Basis-type (søjler til nedbør)
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            type: 'line', // Vind som linje
+                            label: 'Vind (m/s)',
+                            data: windData,
+                            borderColor: '#005b9f',
+                            backgroundColor: 'rgba(0, 91, 159, 0.1)',
+                            borderWidth: 3,
+                            pointRadius: 0, // Ingen prikker for et renere look
+                            tension: 0.3, // Blød kurve
+                            yAxisID: 'y' // Knyttet til venstre akse
+                        },
+                        {
+                            type: 'bar', // Nedbør som søjler
+                            label: 'Nedbør (mm)',
+                            data: rainData,
+                            backgroundColor: 'rgba(126, 200, 240, 0.6)',
+                            borderColor: 'rgba(126, 200, 240, 1)',
+                            borderWidth: 1,
+                            yAxisID: 'y1' // Knyttet til højre akse
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { boxWidth: 12, font: { size: 11 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                maxTicksLimit: 12, // Vis kun ca. 12 tidspunkter på x-aksen for at undgå rod
+                                font: { size: 10 }
+                            },
+                            grid: { display: false }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: 'Vind (m/s)', color: '#005b9f', font: { size: 11 } },
+                            beginAtZero: true,
+                            suggestedMax: 15, // Giver luft over de typiske vindstyrker
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: 'Nedbør (mm)', color: '#7ec8f0', font: { size: 11 } },
+                            beginAtZero: true,
+                            suggestedMax: 5, // Nedbør er ofte små mængder
+                            grid: { drawOnChartArea: false } // Undgå at gridlinjer overlapper
+                        }
+                    }
+                }
+            });
         }
 
         function updateCurrentFromHourly(hourly) {
