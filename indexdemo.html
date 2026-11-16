@@ -885,7 +885,12 @@
                 `;
                 dailyContainer.appendChild(dayDiv);
             });
+         // Custom plugin til pile
+        const windArrowPlugin = {
+            // ... (din plugin-kode) ...
+        };
 
+        let sailingChartInstance = null; // <-- INDSÆT DENNE LINJE HER
             // 3. Opdater sejladsgrafen
             updateSailingChart(timeseries);
         }
