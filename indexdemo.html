@@ -958,6 +958,13 @@
             const hoursToShow = Math.min(96, timeseries.length);
             const labels = [];
             const windData = [];
+            const gustData = []; // NYT
+            for (let i = 0; i < hoursToShow; i++) {
+                // ... eksisterende kode ...
+                // NYT: Tilføj vindstød (brug vindhastighed som fallback hvis stød mangler)
+            const gust = details.wind_speed_of_gust || details.wind_speed;
+                gustData.push(gust);
+            }
             const rainData = [];
             const windDirs = [];
 
@@ -1029,6 +1036,18 @@
                             borderColor: 'rgba(126, 200, 240, 1)',
                             borderWidth: 1,
                             yAxisID: 'y1'
+                        },
+                        {
+                            type: 'line',
+                            label: 'Vindstød (m/s)',
+                            data: gustData,
+                            borderColor: '#e53e3e',
+                            borderWidth: 2,
+                            borderDash: [5, 5], // Stiplet linje
+                            pointRadius: 0,
+                            tension: 0.3,
+                            yAxisID: 'y',
+                            fill: false
                         },
                         {
                             type: 'scatter',
