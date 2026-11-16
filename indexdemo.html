@@ -856,7 +856,12 @@
             const current = timeseries[0].data.instant.details;
             const currentTemp = Math.round(current.air_temperature);
             const currentWind = current.wind_speed;
-            const currentGust = current.wind_speed_of_gust; // NYT
+            
+            // Fejlsikring: Hvis stød mangler i data, bruger vi blot den almindelige vind
+            const currentGust = (current.wind_speed_of_gust !== undefined && current.wind_speed_of_gust !== null) 
+                                ? current.wind_speed_of_gust 
+                                : currentWind; 
+                                
             const currentHumidity = Math.round(current.relative_humidity);
             
             let currentRain = 0;
@@ -866,13 +871,7 @@
             
             document.getElementById('currentTemp').innerHTML = `${currentTemp}<small>°C</small>`;
             document.getElementById('currentWind').textContent = `${currentWind} m/s`;
-            // NYT: Vis vindstød (hvis de findes i data)
-            if (currentGust !== undefined && currentGust !== null) {
-                document.getElementById('currentGust').textContent = `Stød: ${currentGust} m/s`;
-                document.getElementById('currentGust').style.display = 'inline'; // Vis den
-            } else {
-                document.getElementById('currentGust').style.display = 'none'; // Skjul hvis ingen data
-            }
+            document.getElementById('currentGust').textContent = `Stød: ${currentGust} m/s`; // Denne linje skal være der
             document.getElementById('currentRain').textContent = `${currentRain} mm`;
             document.getElementById('currentHumidity').textContent = `${currentHumidity} %`;
 
