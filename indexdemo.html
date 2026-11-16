@@ -975,6 +975,8 @@
                 return arrows[index];
             }
 
+                        const gustData = []; // NYT: Array til vindstød
+
             for (let i = 0; i < hoursToShow; i++) {
                 const entry = timeseries[i];
                 const date = new Date(entry.time);
@@ -986,6 +988,11 @@
                 windData.push(details.wind_speed);
                 windDirs.push(getArrow(details.wind_from_direction));
 
+                // NYT: Tilføj vindstød (brug vindhastighed som fallback hvis stød mangler)
+                const gust = details.wind_speed_of_gust || details.wind_speed;
+                gustData.push(gust);
+
+                // Nedbør: MET Norway giver nedbør i next_1_hours
                 let rain = 0;
                 if (entry.data.next_1_hours && entry.data.next_1_hours.details) {
                     rain = entry.data.next_1_hours.details.precipitation_amount || 0;
@@ -993,11 +1000,12 @@
                 rainData.push(rain);
             }
 
-            if (sailingChartInstance) {
+                        if (sailingChartInstance) {
                 sailingChartInstance.data.labels = labels;
-                sailingChartInstance.data.datasets[0].data = windData;
-                sailingChartInstance.data.datasets[1].data = rainData;
-                sailingChartInstance.data.datasets[2].data = windDirs;
+                sailingChartInstance.data.datasets[0].data = windData;   // Vind
+                sailingChartInstance.data.datasets[1].data = rainData;   // Nedbør
+                sailingChartInstance.data.datasets[2].data = gustData;   // NYT: Vindstød
+                sailingChartInstance.data.datasets[3].data = windDirs;   // Vindretning (flyttet til index 3)
                 sailingChartInstance.update();
                 return;
             }
