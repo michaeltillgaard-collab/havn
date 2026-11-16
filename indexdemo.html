@@ -745,6 +745,7 @@
                     <div class="current-temp" id="currentTemp">--<small>°C</small></div>
                     <div class="current-details">
                         <span>💨 <span id="currentWind">-- m/s</span></span>
+                        <span>💨 <span id="currentGust" style="color: #e53e3e; font-weight: bold;">Stød: -- m/s</span></span>
                         <span>🌧️ <span id="currentRain">0 mm</span></span>
                         <span>💧 <span id="currentHumidity">-- %</span></span>
                     </div>
@@ -855,6 +856,7 @@
             const current = timeseries[0].data.instant.details;
             const currentTemp = Math.round(current.air_temperature);
             const currentWind = current.wind_speed;
+            const currentGust = current.wind_speed_of_gust; // NYT
             const currentHumidity = Math.round(current.relative_humidity);
             
             let currentRain = 0;
@@ -864,6 +866,13 @@
             
             document.getElementById('currentTemp').innerHTML = `${currentTemp}<small>°C</small>`;
             document.getElementById('currentWind').textContent = `${currentWind} m/s`;
+            // NYT: Vis vindstød (hvis de findes i data)
+            if (currentGust !== undefined && currentGust !== null) {
+                document.getElementById('currentGust').textContent = `Stød: ${currentGust} m/s`;
+                document.getElementById('currentGust').style.display = 'inline'; // Vis den
+            } else {
+                document.getElementById('currentGust').style.display = 'none'; // Skjul hvis ingen data
+            }
             document.getElementById('currentRain').textContent = `${currentRain} mm`;
             document.getElementById('currentHumidity').textContent = `${currentHumidity} %`;
 
