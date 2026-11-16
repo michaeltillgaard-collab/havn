@@ -46,7 +46,18 @@
             font-variant-numeric: tabular-nums;
             color: #005b9f;
         }
+        .clock-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end; /* Højrejusterer teksten */
+        }
 
+        .date-display {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #64748b;
+            margin-bottom: 0.1rem;
+        }
         .main {
             flex: 1;
             display: grid;
@@ -558,7 +569,10 @@
 
     <header class="header">
         <img src="./logo.png" alt="Aarøsund Lystbådehavn Logo" class="header-logo">
-        <div class="clock" id="clock">--:--</div>
+        <div class="clock-container">
+            <div class="date-display" id="dateDisplay">--</div>
+            <div class="clock" id="clock">--:--</div>
+        </div>
     </header>
 
     <main class="main">
@@ -752,13 +766,26 @@
 
     <script>
         // ==================== Ur ====================
-        function updateClock() {
+                function updateClock() {
             const now = new Date();
+            
+            // 1. Opdater klokken (timer, minutter, sekunder)
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
             document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+
+            // 2. Opdater datoen (Ugedag d. dag. måned)
+            const days = ['Søndag', 'Mandag', 'Tirsdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lørdag'];
+            const months = ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'december'];
+            
+            const dayName = days[now.getDay()];
+            const dayNum = now.getDate();
+            const monthName = months[now.getMonth()];
+            
+            document.getElementById('dateDisplay').textContent = `${dayName} d. ${dayNum}. ${monthName}`;
         }
+        
         setInterval(updateClock, 1000);
         updateClock();
 
