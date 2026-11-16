@@ -780,13 +780,12 @@
 
         setInterval(nextSlide, 10000);
 
-                // ==================== Vejrdata (MET Norway / yr.no) ====================
+                       // ==================== Vejrdata (MET Norway / yr.no) ====================
         const LAT = 55.2625;
         const LON = 9.7071;
 
         async function fetchWeather() {
             try {
-                // Vi henter rå data fra MET Norway
                 const url = `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${LAT}&lon=${LON}`;
                 
                 const response = await fetch(url);
@@ -794,7 +793,6 @@
                 
                 const data = await response.json();
                 
-                // Behandl data og opdater UI
                 processMetNorwayData(data);
                 
                 document.getElementById('currentUpdate').textContent = 'Opdateret: ' + new Date().toLocaleTimeString('da-DK', {hour: '2-digit', minute:'2-digit'});
@@ -805,7 +803,6 @@
             }
         }
 
-        // Hjælpefunktion til at oversætte MET Norway's symbol_code til emojis
         function getMetIcon(symbolCode) {
             if (!symbolCode) return '🌤️';
             const code = symbolCode.toLowerCase();
@@ -824,17 +821,15 @@
             return '🌤️';
         }
 
-        // Behandler data fra MET Norway og opdaterer skærmen
         function processMetNorwayData(data) {
             const timeseries = data.properties.timeseries;
             
-            // 1. Opdater "Aktuelt vejr" (første punkt i tidsserien)
+            // 1. Opdater "Aktuelt vejr"
             const current = timeseries[0].data.instant.details;
             const currentTemp = Math.round(current.air_temperature);
             const currentWind = current.wind_speed;
             const currentHumidity = Math.round(current.relative_humidity);
             
-            // Find nedbør for den næste time (hvis den findes)
             let currentRain = 0;
             if (timeseries[0].data.next_1_hours && timeseries[0].data.next_1_hours.details) {
                 currentRain = timeseries[0].data.next_1_hours.details.precipitation_amount || 0;
@@ -845,8 +840,7 @@
             document.getElementById('currentRain').textContent = `${currentRain} mm`;
             document.getElementById('currentHumidity').textContent = `${currentHumidity} %`;
 
-            // 2. Opdater 5-dages prognose (dagligt)
-            // Vi finder ét datapunkt pr. dag (kl. 12:00 UTC) for at repræsentere dagen
+            // 2. Opdater 5-dages prognose
             const dailyContainer = document.getElementById('forecastDays');
             dailyContainer.innerHTML = '';
             
@@ -864,38 +858,38 @@
                     
                     dailyData[dayKey] = {
                         tempMax: details.air_temperature,
-                        tempMin: details.air_temperature, // MET giver ikke min/max direkte i compact, så vi bruger samme
+                        tempMin: details.air_temperature, 
                         wind: details.wind_speed,
-                        symbol: symbol
+                        symbol: symbol,
+                        dateObj: date
                     };
                 }
             });
 
-            // Konverter til en liste og tag de første 5 dage
             const dailyList = Object.values(dailyData).slice(0, 5);
             
             dailyList.forEach(day => {
                 const dayDiv = document.createElement('div');
                 dayDiv.className = 'forecast-day';
+                const dayName = dayNames[day.dateObj.getDay()]; // Retter "DAG" til f.eks. "Man"
+                
                 dayDiv.innerHTML = `
-                    <span class="day-name">Dag</span>
+                    <span class="day-name">${dayName}</span>
                     <span class="day-icon">${getMetIcon(day.symbol)}</span>
                     <span class="day-temp">${Math.round(day.tempMax)}° <small>/ ${Math.round(day.tempMin)}°</small></span>
                     <span class="day-wind">${day.wind} m/s</span>
                 `;
                 dailyContainer.appendChild(dayDiv);
             });
-         // Custom plugin til pile
-        const windArrowPlugin = {
-            // ... (din plugin-kode) ...
-        };
 
-        let sailingChartInstance = null; // <-- INDSÆT DENNE LINJE HER
-            // 3. Opdater sejladsgrafen
+            // 3. Opdater grafen
             updateSailingChart(timeseries);
         }
+
+        // ==================== Sejladsgraf (Chart.js) ====================
         
-        // Custom plugin til pile (uændret)
+        let sailingChartInstance = null;
+
         const windArrowPlugin = {
             id: 'windArrows',
             afterDraw: (chart) => {
@@ -925,7 +919,6 @@
             const canvas = document.getElementById('sailingChart');
             if (!canvas) return;
 
-            // Vi tager de næste 96 timer (4 dage)
             const hoursToShow = Math.min(96, timeseries.length);
             const labels = [];
             const windData = [];
@@ -950,7 +943,6 @@
                 windData.push(details.wind_speed);
                 windDirs.push(getArrow(details.wind_from_direction));
 
-                // Nedbør: MET Norway giver nedbør i next_1_hours
                 let rain = 0;
                 if (entry.data.next_1_hours && entry.data.next_1_hours.details) {
                     rain = entry.data.next_1_hours.details.precipitation_amount || 0;
@@ -1049,48 +1041,18 @@
                 plugins: [windArrowPlugin]
             });
         }
-        
-        function updateCurrentFromHourly(hourly) {
-            if (!hourly || !hourly.time) return;
-            
-            const now = new Date();
-            let closestIndex = 0;
-            let minDiff = Infinity;
-            
-            for (let i = 0; i < hourly.time.length; i++) {
-                const time = new Date(hourly.time[i]);
-                const diff = Math.abs(time - now);
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    closestIndex = i;
-                }
-            }
-            
-            const temp = Math.round(hourly.temperature_2m[closestIndex]);
-            const wind = hourly.windspeed_10m[closestIndex];
-            const rain = hourly.precipitation[closestIndex] || 0;
-            const humidity = hourly.relative_humidity_2m[closestIndex];
-            
-            document.getElementById('currentTemp').innerHTML = `${temp}<small>°C</small>`;
-            document.getElementById('currentWind').textContent = `${wind} m/s`;
-            document.getElementById('currentRain').textContent = `${rain} mm`;
-            document.getElementById('currentHumidity').textContent = `${humidity} %`;
-        }
+
         // ==================== Hent meddelelser fra Google Sheet (JSONP) ====================
         function fetchNotices() {
-            // Din nuværende /exec URL
             const scriptUrl = 'https://script.google.com/macros/s/AKfycbzdoOKAtQkFGcIqsxvpjxV8eNmIYHdkPVoSJvpT5QSXFtMjSAAiUv0MgqitRyKojbt6bQ/exec';
-            
-            // Opret et unikt navn til vores callback-funktion
             const callbackName = 'handleNotices_' + Math.round(100000 * Math.random());
             
-            // Definer den funktion, som scriptet kalder, når det er indlæst
             window[callbackName] = function(messages) {
-                console.log("Data modtaget fra Google:", messages); // Til fejlfinding
+                console.log("Data modtaget fra Google:", messages);
                 
                 const listContainer = document.getElementById('noticeList');
                 if (listContainer) {
-                    listContainer.innerHTML = ''; // Ryd listen
+                    listContainer.innerHTML = ''; 
                     if (messages && messages.length > 0) {
                         messages.forEach(message => {
                             const li = document.createElement('li');
@@ -1104,7 +1066,6 @@
                     console.error("Kunne ikke finde elementet med id 'noticeList'");
                 }
                 
-                // Ryd op: fjern script-tagget og slet den midlertidige funktion
                 const scriptElement = document.getElementById(callbackName);
                 if (scriptElement && scriptElement.parentNode) {
                     scriptElement.parentNode.removeChild(scriptElement);
@@ -1112,12 +1073,10 @@
                 delete window[callbackName];
             };
 
-            // Opret og indsæt script-tagget på siden
             const script = document.createElement('script');
-            script.id = callbackName; // Giv scriptet et ID, så vi kan fjerne det igen
+            script.id = callbackName; 
             script.src = scriptUrl + '?callback=' + callbackName;
             
-            // Hvis scriptet fejler (f.eks. netværksfejl)
             script.onerror = function() {
                 console.error('Fejl ved indlæsning af meddelelser via JSONP.');
                 const listContainer = document.getElementById('noticeList');
@@ -1131,10 +1090,10 @@
                 delete window[callbackName];
             };
 
-                                        document.body.appendChild(script);
+            document.body.appendChild(script);
         }
 
-        // Kald funktionerne, når siden er færdig med at indlæse HTML'en
+        // ==================== Start ====================
         document.addEventListener('DOMContentLoaded', function() {
             fetchNotices();
             fetchWeather();
