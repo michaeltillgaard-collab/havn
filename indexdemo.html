@@ -780,22 +780,22 @@
 
         setInterval(nextSlide, 10000);
 
-        // ==================== Vejrdata ====================
+                // ==================== Vejrdata (MET Norway / yr.no) ====================
         const LAT = 55.2625;
         const LON = 9.7071;
 
         async function fetchWeather() {
             try {
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=temperature_2m,precipitation,windspeed_10m,winddirection_10m,relative_humidity_2m&daily=weathercode,temperature_2m_max,temperature_2m_min,windspeed_10m_max&timezone=Europe/Copenhagen&forecast_days=5&models=metno_seamless&wind_speed_unit=ms`;
+                // Vi henter rå data fra MET Norway
+                const url = `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${LAT}&lon=${LON}`;
                 
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('Netværksanmodning mislykkedes');
                 
                 const data = await response.json();
                 
-                updateForecast(data.daily);
-                updateCurrentFromHourly(data.hourly);
-                updateSailingChart(data.hourly);
+                // Behandl data og opdater UI
+                processMetNorwayData(data);
                 
                 document.getElementById('currentUpdate').textContent = 'Opdateret: ' + new Date().toLocaleTimeString('da-DK', {hour: '2-digit', minute:'2-digit'});
                 
@@ -805,46 +805,248 @@
             }
         }
 
-        function getWeatherIcon(code) {
-            if (code === 0) return '☀️';
-            if (code <= 3) return '⛅';
-            if (code <= 48) return '🌫️';
-            if (code <= 67) return '🌧️';
-            if (code <= 77) return '❄️';
-            if (code <= 82) return '🌦️';
-            if (code <= 86) return '🌨️';
-            if (code <= 99) return '⛈️';
+        // Hjælpefunktion til at oversætte MET Norway's symbol_code til emojis
+        function getMetIcon(symbolCode) {
+            if (!symbolCode) return '🌤️';
+            const code = symbolCode.toLowerCase();
+            if (code.includes('clearsky')) return '☀️';
+            if (code.includes('fair')) return '🌤️';
+            if (code.includes('partlycloudy')) return '⛅';
+            if (code.includes('cloudy')) return '☁️';
+            if (code.includes('fog')) return '🌫️';
+            if (code.includes('lightrain')) return '🌦️';
+            if (code.includes('rain')) return '🌧️';
+            if (code.includes('heavyrain')) return '⛈️';
+            if (code.includes('lightsnow')) return '🌨️';
+            if (code.includes('snow')) return '❄️';
+            if (code.includes('sleet')) return '🌨️';
+            if (code.includes('thunder')) return '⛈️';
             return '🌤️';
         }
 
-        function updateForecast(daily) {
-            const container = document.getElementById('forecastDays');
-            if (!daily || !daily.time || daily.time.length === 0) return;
+        // Behandler data fra MET Norway og opdaterer skærmen
+        function processMetNorwayData(data) {
+            const timeseries = data.properties.timeseries;
             
-            container.innerHTML = '';
+            // 1. Opdater "Aktuelt vejr" (første punkt i tidsserien)
+            const current = timeseries[0].data.instant.details;
+            const currentTemp = Math.round(current.air_temperature);
+            const currentWind = current.wind_speed;
+            const currentHumidity = Math.round(current.relative_humidity);
+            
+            // Find nedbør for den næste time (hvis den findes)
+            let currentRain = 0;
+            if (timeseries[0].data.next_1_hours && timeseries[0].data.next_1_hours.details) {
+                currentRain = timeseries[0].data.next_1_hours.details.precipitation_amount || 0;
+            }
+            
+            document.getElementById('currentTemp').innerHTML = `${currentTemp}<small>°C</small>`;
+            document.getElementById('currentWind').textContent = `${currentWind} m/s`;
+            document.getElementById('currentRain').textContent = `${currentRain} mm`;
+            document.getElementById('currentHumidity').textContent = `${currentHumidity} %`;
+
+            // 2. Opdater 5-dages prognose (dagligt)
+            // Vi finder ét datapunkt pr. dag (kl. 12:00 UTC) for at repræsentere dagen
+            const dailyContainer = document.getElementById('forecastDays');
+            dailyContainer.innerHTML = '';
+            
             const dayNames = ['Søn', 'Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør'];
+            const dailyData = {};
             
-            for (let i = 0; i < daily.time.length; i++) {
-                const date = new Date(daily.time[i]);
-                const dayName = dayNames[date.getDay()];
-                const maxTemp = Math.round(daily.temperature_2m_max[i]);
-                const minTemp = Math.round(daily.temperature_2m_min[i]);
-                const code = daily.weathercode[i];
-                const wind = daily.windspeed_10m_max[i];
-                const icon = getWeatherIcon(code);
+            timeseries.forEach(entry => {
+                const date = new Date(entry.time);
+                const dayKey = date.toISOString().split('T')[0];
                 
+                // Vi bruger kl. 12 (UTC) som dagens repræsentant
+                if (date.getUTCHours() === 12 && !dailyData[dayKey]) {
+                    const details = entry.data.instant.details;
+                    const symbol = entry.data.next_6_hours ? entry.data.next_6_hours.summary.symbol_code : 'cloudy';
+                    
+                    dailyData[dayKey] = {
+                        tempMax: details.air_temperature,
+                        tempMin: details.air_temperature, // MET giver ikke min/max direkte i compact, så vi bruger samme
+                        wind: details.wind_speed,
+                        symbol: symbol
+                    };
+                }
+            });
+
+            // Konverter til en liste og tag de første 5 dage
+            const dailyList = Object.values(dailyData).slice(0, 5);
+            
+            dailyList.forEach(day => {
                 const dayDiv = document.createElement('div');
                 dayDiv.className = 'forecast-day';
                 dayDiv.innerHTML = `
-                    <span class="day-name">${dayName}</span>
-                    <span class="day-icon">${icon}</span>
-                    <span class="day-temp">${maxTemp}° <small>/ ${minTemp}°</small></span>
-                    <span class="day-wind">${wind} m/s</span>
+                    <span class="day-name">Dag</span>
+                    <span class="day-icon">${getMetIcon(day.symbol)}</span>
+                    <span class="day-temp">${Math.round(day.tempMax)}° <small>/ ${Math.round(day.tempMin)}°</small></span>
+                    <span class="day-wind">${day.wind} m/s</span>
                 `;
-                container.appendChild(dayDiv);
-            }
+                dailyContainer.appendChild(dayDiv);
+            });
+
+            // 3. Opdater sejladsgrafen
+            updateSailingChart(timeseries);
         }
 
+        // Opdater Chart.js grafen med MET Norway data
+        let sailingChartInstance = null;
+        
+        // Custom plugin til pile (uændret)
+        const windArrowPlugin = {
+            id: 'windArrows',
+            afterDraw: (chart) => {
+                const ctx = chart.ctx;
+                const xAxis = chart.scales.x;
+                const yAxis = chart.scales.y;
+                const dataset = chart.data.datasets[2]; 
+                if (!dataset || !dataset.data) return;
+
+                ctx.save();
+                ctx.font = '32px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                const yPos = yAxis.bottom + 15; 
+                const step = 24; 
+                for (let i = 0; i < dataset.data.length; i += step) {
+                    const xPos = xAxis.getPixelForValue(i);
+                    if (dataset.data[i]) {
+                        ctx.fillText(dataset.data[i], xPos, yPos);
+                    }
+                }
+                ctx.restore();
+            }
+        };
+
+        function updateSailingChart(timeseries) {
+            const canvas = document.getElementById('sailingChart');
+            if (!canvas) return;
+
+            // Vi tager de næste 96 timer (4 dage)
+            const hoursToShow = Math.min(96, timeseries.length);
+            const labels = [];
+            const windData = [];
+            const rainData = [];
+            const windDirs = [];
+
+            function getArrow(deg) {
+                if (deg === null || deg === undefined) return '';
+                const arrows = ['⬇️', '↙️', '⬅️', '↖️', '⬆️', '↗️', '➡️', '↘️'];
+                const index = Math.round(deg / 45) % 8;
+                return arrows[index];
+            }
+
+            for (let i = 0; i < hoursToShow; i++) {
+                const entry = timeseries[i];
+                const date = new Date(entry.time);
+                const dayNames = ['Søn', 'Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør'];
+                const label = `${dayNames[date.getDay()]} ${String(date.getHours()).padStart(2, '0')}:00`;
+                labels.push(label);
+                
+                const details = entry.data.instant.details;
+                windData.push(details.wind_speed);
+                windDirs.push(getArrow(details.wind_from_direction));
+
+                // Nedbør: MET Norway giver nedbør i next_1_hours
+                let rain = 0;
+                if (entry.data.next_1_hours && entry.data.next_1_hours.details) {
+                    rain = entry.data.next_1_hours.details.precipitation_amount || 0;
+                }
+                rainData.push(rain);
+            }
+
+            if (sailingChartInstance) {
+                sailingChartInstance.data.labels = labels;
+                sailingChartInstance.data.datasets[0].data = windData;
+                sailingChartInstance.data.datasets[1].data = rainData;
+                sailingChartInstance.data.datasets[2].data = windDirs;
+                sailingChartInstance.update();
+                return;
+            }
+
+            const ctx = canvas.getContext('2d');
+            sailingChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            type: 'line',
+                            label: 'Vind (m/s)',
+                            data: windData,
+                            borderColor: '#005b9f',
+                            backgroundColor: 'rgba(0, 91, 159, 0.1)',
+                            borderWidth: 5,
+                            pointRadius: 0,
+                            tension: 0.3,
+                            yAxisID: 'y',
+                            segment: {
+                                borderColor: ctx => {
+                                    const wind = ctx.p0.parsed.y;
+                                    if (wind < 5) return '#22c55e';
+                                    if (wind < 10) return '#eab308';
+                                    if (wind < 14) return '#f97316';
+                                    return '#ef4444';
+                                }
+                            }
+                        },
+                        {
+                            type: 'bar',
+                            label: 'Nedbør (mm)',
+                            data: rainData,
+                            backgroundColor: 'rgba(126, 200, 240, 0.6)',
+                            borderColor: 'rgba(126, 200, 240, 1)',
+                            borderWidth: 1,
+                            yAxisID: 'y1'
+                        },
+                        {
+                            type: 'scatter',
+                            label: 'Vindretning',
+                            data: windDirs,
+                            pointStyle: windDirs, 
+                            pointRadius: 0,
+                            backgroundColor: 'transparent',
+                            borderColor: 'transparent',
+                            clip: false,
+                            yAxisID: 'y',
+                            showLine: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: { padding: { bottom: 45 } },
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { boxWidth: 12, font: { size: 11 }, filter: function(item) {
+                                return item.text !== 'Vindretning';
+                            } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.dataset.label === 'Vind (m/s)') {
+                                        const arrow = windDirs[context.dataIndex];
+                                        return `Vind: ${context.raw} m/s ${arrow}`;
+                                    }
+                                    return context.dataset.label + ': ' + context.formattedValue;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { maxTicksLimit: 12, font: { size: 10 } }, grid: { display: false } },
+                        y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Vind (m/s)', color: '#005b9f', font: { size: 11 } }, beginAtZero: true, suggestedMax: 15, grid: { color: 'rgba(0,0,0,0.05)' } },
+                        y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Nedbør (mm)', color: '#7ec8f0', font: { size: 11 } }, beginAtZero: true, suggestedMax: 5, grid: { drawOnChartArea: false } }
+                    }
+                },
+                plugins: [windArrowPlugin]
+            });
+        }
         // ==================== Sejladsgraf (Chart.js) ====================
         let sailingChartInstance = null;
 
