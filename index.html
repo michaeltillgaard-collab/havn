@@ -926,16 +926,28 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        {
+                                                {
                             type: 'line',
                             label: 'Vind (m/s)',
                             data: windData,
-                            borderColor: '#005b9f',
+                            borderColor: '#005b9f', // Standard farve
                             backgroundColor: 'rgba(0, 91, 159, 0.1)',
-                            borderWidth: 3,
+                            borderWidth: 5, // Gør stregen tykkere (før var den 3)
                             pointRadius: 0,
                             tension: 0.3,
-                            yAxisID: 'y'
+                            yAxisID: 'y',
+                            // NYT: Farvelæg linjen efter vindstyrke
+                            segment: {
+                                borderColor: ctx => {
+                                    const wind = ctx.p0.parsed.y; // Vindstyrken ved starten af segmentet
+                                    
+                                    // Farveskala for sejlere (tilpas gerne farverne her)
+                                    if (wind < 5) return '#22c55e';       // Grøn: Let vind (0-4.9 m/s)
+                                    if (wind < 10) return '#eab308';      // Gul: Frisk vind (5-9.9 m/s)
+                                    if (wind < 14) return '#f97316';      // Orange: Hård vind (10-13.9 m/s)
+                                    return '#ef4444';                     // Rød: Storm (14+ m/s)
+                                }
+                            }
                         },
                         {
                             type: 'bar',
