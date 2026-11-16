@@ -951,22 +951,16 @@
             }
         };
 
-        function updateSailingChart(timeseries) {
+                function updateSailingChart(timeseries) {
             const canvas = document.getElementById('sailingChart');
             if (!canvas) return;
 
             const hoursToShow = Math.min(96, timeseries.length);
             const labels = [];
             const windData = [];
-            const gustData = []; // NYT
-            for (let i = 0; i < hoursToShow; i++) {
-                // ... eksisterende kode ...
-                // NYT: Tilføj vindstød (brug vindhastighed som fallback hvis stød mangler)
-            const gust = details.wind_speed_of_gust || details.wind_speed;
-                gustData.push(gust);
-            }
             const rainData = [];
             const windDirs = [];
+            const gustData = []; // KUN ÉN GANG
 
             function getArrow(deg) {
                 if (deg === null || deg === undefined) return '';
@@ -974,8 +968,6 @@
                 const index = Math.round(deg / 45) % 8;
                 return arrows[index];
             }
-
-                        const gustData = []; // NYT: Array til vindstød
 
             for (let i = 0; i < hoursToShow; i++) {
                 const entry = timeseries[i];
@@ -988,11 +980,10 @@
                 windData.push(details.wind_speed);
                 windDirs.push(getArrow(details.wind_from_direction));
 
-                // NYT: Tilføj vindstød (brug vindhastighed som fallback hvis stød mangler)
+                // Tilføj vindstød (brug vindhastighed som fallback hvis stød mangler)
                 const gust = details.wind_speed_of_gust || details.wind_speed;
                 gustData.push(gust);
 
-                // Nedbør: MET Norway giver nedbør i next_1_hours
                 let rain = 0;
                 if (entry.data.next_1_hours && entry.data.next_1_hours.details) {
                     rain = entry.data.next_1_hours.details.precipitation_amount || 0;
@@ -1000,12 +991,12 @@
                 rainData.push(rain);
             }
 
-                        if (sailingChartInstance) {
+            if (sailingChartInstance) {
                 sailingChartInstance.data.labels = labels;
                 sailingChartInstance.data.datasets[0].data = windData;   // Vind
                 sailingChartInstance.data.datasets[1].data = rainData;   // Nedbør
-                sailingChartInstance.data.datasets[2].data = gustData;   // NYT: Vindstød
-                sailingChartInstance.data.datasets[3].data = windDirs;   // Vindretning (flyttet til index 3)
+                sailingChartInstance.data.datasets[2].data = gustData;   // Vindstød
+                sailingChartInstance.data.datasets[3].data = windDirs;   // Vindretning
                 sailingChartInstance.update();
                 return;
             }
@@ -1080,7 +1071,7 @@
                         legend: {
                             position: 'top',
                             labels: { boxWidth: 12, font: { size: 11 }, filter: function(item) {
-                                return item.text !== 'Vindretning';
+                                return item.text !== 'Vindretning'; // Skjul vindretning i legend
                             } }
                         },
                         tooltip: {
