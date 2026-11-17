@@ -814,7 +814,7 @@
 
         async function fetchWeather() {
             try {
-                const url = `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${LAT}&lon=${LON}`;
+                const url = `https://api.met.no/weatherapi/locationforecast/2.0/complete?lat=${LAT}&lon=${LON}`;
                 
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('Netværksanmodning mislykkedes');
@@ -925,20 +925,24 @@
         
         let sailingChartInstance = null;
 
-        const windArrowPlugin = {
+                const windArrowPlugin = {
             id: 'windArrows',
             afterDraw: (chart) => {
                 const ctx = chart.ctx;
                 const xAxis = chart.scales.x;
                 const yAxis = chart.scales.y;
-                const dataset = chart.data.datasets[3]; // Vindretning er nu datasæt nr. 4 (index 3) 
+                const dataset = chart.data.datasets[3]; // Vindretning er datasæt index 3
                 if (!dataset || !dataset.data) return;
 
                 ctx.save();
-                ctx.font = '32px Arial';
+                ctx.font = '28px Arial'; // Lidt mindre font
                 ctx.textAlign = 'center';
-                ctx.textBaseline = 'bottom';
-                const yPos = yAxis.bottom + 15; 
+                ctx.textBaseline = 'top'; // Justeret til 'top'
+                
+                // Vi tegner pilene lidt under x-aksen (inde i padding-området)
+                const yPos = yAxis.bottom + 10; 
+
+                // Tegn en pil pr. ca. 24. time for ikke at skabe rod
                 const step = 24; 
                 for (let i = 0; i < dataset.data.length; i += step) {
                     const xPos = xAxis.getPixelForValue(i);
