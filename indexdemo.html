@@ -746,6 +746,7 @@
                     <div class="current-details">
                         <span>💨 <span id="currentWind">-- m/s</span></span>
                         <span>💨 <span id="currentGust" style="color: #e53e3e; font-weight: bold;">Stød: -- m/s</span></span>
+                        <span>🌊 <span id="currentWaterLevel" style="font-weight: bold; color: #005b9f;">-- cm</span></span>
                         <span>🌧️ <span id="currentRain">0 mm</span></span>
                         <span>💧 <span id="currentHumidity">-- %</span></span>
                     </div>
@@ -1147,11 +1148,48 @@
 
             document.body.appendChild(script);
         }
+        // ==================== Hent aktuel vandstand fra DMI ====================
+        async function fetchWaterLevel() {
+            try {
+                // Station ID for Fynshav er 26457. Parameter sealev_dvr er vandstand i cm (DVR90).
+                const stationId = '26457';
+                const url = `https://opendataapi.dmi.dk/v2/oceanObs/collections/observation/items?stationId=${stationId}&parameterId=sealev_dvr&period=latest&limit=1`;
 
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Kunne ikke hente vandstand');
+
+                const data = await response.json();
+                
+                if (data.features && data.features.length > 0) {
+                    const latest = data.features[0];
+                    // Værdien ligger i properties.value
+                    const waterLevel = latest.properties.value;
+                    const observedTime = latest.properties.observed;
+
+                    // Opdater HTML-elementet
+                    const displayElement = document.getElementById('currentWaterLevel');
+                    if (displayElement) {
+                        displayElement.textContent = `${waterLevel} cm`;
+                    }
+                    
+                    console.log("Vandstand opdateret:", waterLevel, "cm", "kl.", observedTime);
+                } else {
+                    console.warn("Ingen vandstandsdata fundet for stationen.");
+                }
+            } catch (error) {
+                console.error('Fejl ved hentning af vandstand:', error);
+                // Vis en streg, hvis det fejler
+                const displayElement = document.getElementById('currentWaterLevel');
+                if (displayElement) {
+                    displayElement.textContent = '-- cm';
+                }
+            }
+        }
         // ==================== Start ====================
         document.addEventListener('DOMContentLoaded', function() {
             fetchNotices();
             fetchWeather();
+            fetchWaterLevel(); // <-- Tilføj denne linje
         });
         
         setInterval(fetchWeather, 30 * 60 * 1000); 
