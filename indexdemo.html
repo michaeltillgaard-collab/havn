@@ -925,24 +925,22 @@
         
         let sailingChartInstance = null;
 
-                const windArrowPlugin = {
+                        const windArrowPlugin = {
             id: 'windArrows',
             afterDraw: (chart) => {
                 const ctx = chart.ctx;
                 const xAxis = chart.scales.x;
-                const yAxis = chart.scales.y;
-                const dataset = chart.data.datasets[3]; // Vindretning er datasæt index 3
+                const dataset = chart.data.datasets[3]; 
                 if (!dataset || !dataset.data) return;
 
                 ctx.save();
-                ctx.font = '28px Arial'; // Lidt mindre font
+                ctx.font = '28px Arial'; 
                 ctx.textAlign = 'center';
-                ctx.textBaseline = 'top'; // Justeret til 'top'
+                ctx.textBaseline = 'top';
                 
-                // Vi tegner pilene lidt under x-aksen (inde i padding-området)
-                const yPos = yAxis.bottom + 10; 
+                // NYT: Vi placerer pilene i toppen af grafen (y=10)
+                const yPos = 10; 
 
-                // Tegn en pil pr. ca. 24. time for ikke at skabe rod
                 const step = 24; 
                 for (let i = 0; i < dataset.data.length; i += step) {
                     const xPos = xAxis.getPixelForValue(i);
