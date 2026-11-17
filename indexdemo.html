@@ -1011,7 +1011,10 @@
                 windDirs.push(getArrow(details.wind_from_direction));
 
                 // Tilføj vindstød (brug vindhastighed som fallback hvis stød mangler)
-                const gust = details.wind_speed_of_gust || details.wind_speed;
+                let gust = details.wind_speed;
+                if (details.wind_speed_of_gust !== undefined && details.wind_speed_of_gust !== null) {
+                    gust = details.wind_speed_of_gust;
+                }
                 gustData.push(gust);
 
                 let rain = 0;
