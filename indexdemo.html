@@ -1094,17 +1094,20 @@
                             yAxisID: 'y',
                             fill: false
                         },
-                        {
+                                                {
                             type: 'scatter',
                             label: 'Vindretning',
                             data: windDirs,
-                            pointStyle: windDirs, 
-                            pointRadius: 0,
+                            pointRadius: 0,          // Skjul punkterne
                             backgroundColor: 'transparent',
                             borderColor: 'transparent',
-                            clip: false,
+                            showLine: false,
                             yAxisID: 'y',
-                            showLine: false
+                            // NYT: Fortæl Chart.js at dette datasæt ikke må påvirke y-aksen
+                            parsing: false,          // Spring over automatisk parsing
+                            normalized: true,
+                            // Vi tvinger dataene til at ligge på y=0, så de ikke ødelægger skalaen
+                            data: windDirs.map(() => 0) 
                         }
                     ]
                 },
