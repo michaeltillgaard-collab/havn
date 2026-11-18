@@ -951,6 +951,9 @@
         // ==================== Sejladsgraf (Chart.js) ====================
         
         let sailingChartInstance = null;
+        
+        // Tilføj denne linje:
+        let currentWindDirs = []; 
 
         // NYT: Objekt til at holde vores PNG-pile
         const arrowImages = {};
@@ -963,26 +966,25 @@
             arrowImages[deg] = img;
         });
 
-        const windArrowPlugin = {
+                const windArrowPlugin = {
             id: 'windArrows',
             afterDraw: (chart) => {
                 const ctx = chart.ctx;
                 const xAxis = chart.scales.x;
-                const dataset = chart.data.datasets[3]; // Vindretning
-                if (!dataset || !dataset.data) return;
+                if (!currentWindDirs || currentWindDirs.length === 0) return; // Tjek at vi har data
 
                 ctx.save();
                 
                 // Vi tegner pilene i toppen af grafen
                 const yPos = 8; 
                 const step = 24; 
-                const iconSize = 24; // Juster størrelsen på dine PNG-filer her
+                const iconSize = 24; 
 
-                for (let i = 0; i < dataset.data.length; i += step) {
+                for (let i = 0; i < currentWindDirs.length; i += step) {
                     const xPos = xAxis.getPixelForValue(i);
                     
                     // Find den rigtige PNG ud fra vindretningen
-                    const deg = dataset.data[i];
+                    const deg = currentWindDirs[i]; // Læs fra det globale array
                     if (deg !== null && deg !== undefined) {
                         // Afrund til nærmeste 45 grader for at finde den rigtige fil
                         const index = Math.round(deg / 45) % 8;
@@ -998,7 +1000,6 @@
                 ctx.restore();
             }
         };
-
                 function updateSailingChart(timeseries) {
             const canvas = document.getElementById('sailingChart');
             if (!canvas) return;
@@ -1007,7 +1008,7 @@
             const labels = [];
             const windData = [];
             const rainData = [];
-            const windDirs = [];
+            currentWindDirs = []; // Nulstil det globale array;
             const gustData = []; // KUN ÉN GANG
 
             
@@ -1021,7 +1022,7 @@
                 
                 const details = entry.data.instant.details;
                 windData.push(details.wind_speed);
-                windDirs.push(details.wind_from_direction); // Gemmer nu grader (f.eks. 180) i stedet for emoji
+                currentWindDirs.push(details.wind_from_direction);
 
                 // Tilføj vindstød (brug vindhastighed som fallback hvis stød mangler)
                 let gust = details.wind_speed;
@@ -1042,7 +1043,7 @@
                 sailingChartInstance.data.datasets[0].data = windData;   // Vind
                 sailingChartInstance.data.datasets[1].data = rainData;   // Nedbør
                 sailingChartInstance.data.datasets[2].data = gustData;   // Vindstød
-                sailingChartInstance.data.datasets[3].data = windDirs;   // Vindretning
+                sailingChartInstance.data.datasets[3].data = currentWindDirs.map(() => 0);
                 sailingChartInstance.update();
                 return;
             }
@@ -1095,19 +1096,16 @@
                             fill: false
                         },
                                                 {
+                                                    {
                             type: 'scatter',
                             label: 'Vindretning',
-                            data: windDirs,
-                            pointRadius: 0,          // Skjul punkterne
+                            data: currentWindDirs.map(() => 0), // Send nuller til grafen
+                            pointRadius: 0,
                             backgroundColor: 'transparent',
                             borderColor: 'transparent',
                             showLine: false,
                             yAxisID: 'y',
-                            // NYT: Fortæl Chart.js at dette datasæt ikke må påvirke y-aksen
-                            parsing: false,          // Spring over automatisk parsing
-                            normalized: true,
-                            // Vi tvinger dataene til at ligge på y=0, så de ikke ødelægger skalaen
-                            data: windDirs.map(() => 0) 
+                            clip: false
                         }
                     ]
                 },
