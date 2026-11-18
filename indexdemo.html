@@ -952,27 +952,47 @@
         
         let sailingChartInstance = null;
 
-                        const windArrowPlugin = {
+        // NYT: Objekt til at holde vores PNG-pile
+        const arrowImages = {};
+        const arrowDegrees = [0, 45, 90, 135, 180, 225, 270, 315];
+        
+        // Indlæs billederne, når siden starter
+        arrowDegrees.forEach(deg => {
+            const img = new Image();
+            img.src = `arrow_${deg}.png`; // F.eks. 'arrow_0.png'
+            arrowImages[deg] = img;
+        });
+
+        const windArrowPlugin = {
             id: 'windArrows',
             afterDraw: (chart) => {
                 const ctx = chart.ctx;
                 const xAxis = chart.scales.x;
-                const dataset = chart.data.datasets[3]; 
+                const dataset = chart.data.datasets[3]; // Vindretning
                 if (!dataset || !dataset.data) return;
 
                 ctx.save();
-                ctx.font = '28px Arial'; 
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'top';
                 
-                // NYT: Vi placerer pilene i toppen af grafen (y=10)
+                // Vi tegner pilene i toppen af grafen
                 const yPos = 8; 
-
                 const step = 24; 
+                const iconSize = 24; // Juster størrelsen på dine PNG-filer her
+
                 for (let i = 0; i < dataset.data.length; i += step) {
                     const xPos = xAxis.getPixelForValue(i);
-                    if (dataset.data[i]) {
-                        ctx.fillText(dataset.data[i], xPos, yPos);
+                    
+                    // Find den rigtige PNG ud fra vindretningen
+                    const deg = dataset.data[i];
+                    if (deg !== null && deg !== undefined) {
+                        // Afrund til nærmeste 45 grader for at finde den rigtige fil
+                        const index = Math.round(deg / 45) % 8;
+                        const arrowDeg = arrowDegrees[index];
+                        const img = arrowImages[arrowDeg];
+
+                        if (img && img.complete) {
+                            // Tegn billedet centreret på xPos, og justeret til yPos
+                            ctx.drawImage(img, xPos - (iconSize / 2), yPos, iconSize, iconSize);
+                        }
                     }
                 }
                 ctx.restore();
@@ -990,12 +1010,7 @@
             const windDirs = [];
             const gustData = []; // KUN ÉN GANG
 
-            function getArrow(deg) {
-                if (deg === null || deg === undefined) return '';
-                const arrows = ['⬇️', '↙️', '⬅️', '↖️', '⬆️', '↗️', '➡️', '↘️'];
-                const index = Math.round(deg / 45) % 8;
-                return arrows[index];
-            }
+            
 
             for (let i = 0; i < hoursToShow; i++) {
                 const entry = timeseries[i];
@@ -1006,7 +1021,7 @@
                 
                 const details = entry.data.instant.details;
                 windData.push(details.wind_speed);
-                windDirs.push(getArrow(details.wind_from_direction));
+                windDirs.push(details.wind_from_direction); // Gemmer nu grader (f.eks. 180) i stedet for emoji
 
                 // Tilføj vindstød (brug vindhastighed som fallback hvis stød mangler)
                 let gust = details.wind_speed;
