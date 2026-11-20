@@ -2,7 +2,7 @@ backend:
   name: github
   repo: michaeltillgaard-collab/havn # Dit brugernavn/repo
   branch: main
-  base_url: https://decap-cms-oauth.netlify.app # Den offentlige OAuth proxy
+  base_url: https://havn.michaeltillgaard.workers.dev # Den offentlige OAuth proxy
   auth_endpoint: /auth
   # Client ID fortæller GitHub, hvilken app der spørger
   client_id: Ov23lii3TCh7jQNE8cYq 
