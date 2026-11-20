@@ -1,0 +1,18 @@
+backend:
+  name: github
+  repo: michaeltillgaard-collab/havn # Dit GitHub brugernavn/repo
+  branch: main
+  base_url: https://decap-cms-oauth.netlify.app # Offentlig OAuth proxy til GitHub
+
+media_folder: "images" # Hvor billeder gemmes i dit repo
+public_folder: "/images"
+
+collections:
+  - name: "indstillinger"
+    label: "Infoskærm Indstillinger"
+    files:
+      - name: "meddelelser"
+        label: "Aktuelle Meddelelser"
+        file: "meddelelser.json" # En ny fil, som din HTML skal læse fra
+        fields:
+          - {label: "Meddelelse", name: "besked", widget: "list", field: {label: "Tekst", name: "tekst", widget: "string"}}
