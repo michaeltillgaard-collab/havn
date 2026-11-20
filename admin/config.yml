@@ -1,9 +1,9 @@
 backend:
   name: github
-  repo: michaeltillgaard-collab/havn # Dit brugernavn/repo
+  repo: michaeltillgaard-collab/havn
   branch: main
-  base_url: https://havn.michaeltillgaard.workers.dev # Den offentlige OAuth proxy
-  auth_endpoint: /auth
+  base_url: https://havn.michaeltillgaard.workers.dev
+  auth_endpoint: /auth  # <-- DENNE LINJE ER VIGTIG
   # Client ID fortæller GitHub, hvilken app der spørger
   client_id: Ov23lii3TCh7jQNE8cYq 
 
