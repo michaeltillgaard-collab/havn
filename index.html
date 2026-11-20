@@ -1211,57 +1211,30 @@
                 plugins: [windArrowPlugin]
             });
         }
-
-        // ==================== Hent meddelelser fra Google Sheet (JSONP) ====================
-        function fetchNotices() {
-            const scriptUrl = 'https://script.google.com/macros/s/AKfycbzdoOKAtQkFGcIqsxvpjxV8eNmIYHdkPVoSJvpT5QSXFtMjSAAiUv0MgqitRyKojbt6bQ/exec';
-            const callbackName = 'handleNotices_' + Math.round(100000 * Math.random());
-            
-            window[callbackName] = function(messages) {
-                console.log("Data modtaget fra Google:", messages);
-                
-                const listContainer = document.getElementById('noticeList');
-                if (listContainer) {
-                    listContainer.innerHTML = ''; 
-                    if (messages && messages.length > 0) {
-                        messages.forEach(message => {
-                            const li = document.createElement('li');
-                            li.textContent = message;
-                            listContainer.appendChild(li);
-                        });
-                    } else {
-                        listContainer.innerHTML = '<li>Ingen aktuelle meddelelser.</li>';
-                    }
-                } else {
-                    console.error("Kunne ikke finde elementet med id 'noticeList'");
-                }
-                
-                const scriptElement = document.getElementById(callbackName);
-                if (scriptElement && scriptElement.parentNode) {
-                    scriptElement.parentNode.removeChild(scriptElement);
-                }
-                delete window[callbackName];
-            };
-
-            const script = document.createElement('script');
-            script.id = callbackName; 
-            script.src = scriptUrl + '?callback=' + callbackName;
-            
-            script.onerror = function() {
-                console.error('Fejl ved indlæsning af meddelelser via JSONP.');
-                const listContainer = document.getElementById('noticeList');
-                if (listContainer) {
-                    listContainer.innerHTML = '<li>Meddelelser er ikke tilgængelige i øjeblikket.</li>';
-                }
-                const scriptElement = document.getElementById(callbackName);
-                if (scriptElement && scriptElement.parentNode) {
-                    scriptElement.parentNode.removeChild(scriptElement);
-                }
-                delete window[callbackName];
-            };
-
-            document.body.appendChild(script);
+//================================Udskiftet ======================
+async function fetchNotices() {
+    try {
+        // Henter den fil, som Decap CMS redigerer i
+        const response = await fetch('meddelelser.json'); 
+        if (!response.ok) throw new Error('Kunne ikke hente meddelelser');
+        
+        const data = await response.json();
+        const listContainer = document.getElementById('noticeList');
+        
+        if (listContainer) {
+            listContainer.innerHTML = '';
+            // Går ud fra at data.besked er en liste af objekter med en 'tekst' egenskab
+            data.besked.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item.tekst;
+                listContainer.appendChild(li);
+            });
         }
+    } catch (error) {
+        console.error('Fejl:', error);
+        // Fallback til tom liste eller fejlbesked
+    }
+}
         // ==================== Hent aktuel vandstand fra DMI ====================
         async function fetchWaterLevel() {
             try {
