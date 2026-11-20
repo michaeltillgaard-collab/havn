@@ -3,7 +3,9 @@ backend:
   repo: michaeltillgaard-collab/havn
   branch: main
   base_url: https://havn.michaeltillgaard.workers.dev
-  auth_endpoint: /auth  # <-- DENNE LINJE ER VIGTIG
+  auth_endpoint: /auth
+  # Tilføj denne linje:
+  site_domain: michaeltillgaard-collab.github.io
   # Client ID fortæller GitHub, hvilken app der spørger
   client_id: Ov23lii3TCh7jQNE8cYq 
 
