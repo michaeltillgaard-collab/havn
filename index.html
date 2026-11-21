@@ -970,28 +970,45 @@
             dailyContainer.innerHTML = '';
             
             const dayNames = ['Søn', 'Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør'];
-            const dailyData = {};
-            
-            timeseries.forEach(entry => {
-                const date = new Date(entry.time);
-                const dayKey = date.toISOString().split('T')[0];
-                
-                // Vi bruger kl. 12 (UTC) som dagens repræsentant
-                if (date.getUTCHours() === 12 && !dailyData[dayKey]) {
-                    const details = entry.data.instant.details;
-                    const symbol = entry.data.next_6_hours ? entry.data.next_6_hours.summary.symbol_code : 'cloudy';
-                    
-                    dailyData[dayKey] = {
-                        tempMax: details.air_temperature,
-                        tempMin: details.air_temperature, 
-                        wind: details.wind_speed,
-                        symbol: symbol,
-                        dateObj: date
-                    };
-                }
-            });
+const dailyData = {};
 
-            const dailyList = Object.values(dailyData).slice(0, 5);
+timeseries.forEach(entry => {
+    const date = new Date(entry.time);
+    // Gruppér på lokal dato (ikke UTC), så dagene følger dansk tid
+    const dayKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+    const details = entry.data.instant.details;
+    const temp = details.air_temperature;
+    const wind = details.wind_speed;
+
+    if (!dailyData[dayKey]) {
+        dailyData[dayKey] = {
+            tempMax: temp,
+            tempMin: temp,
+            wind: wind,
+            symbol: null,
+            symbolDist: Infinity,
+            dateObj: date
+        };
+    }
+
+    const d = dailyData[dayKey];
+    d.tempMax = Math.max(d.tempMax, temp);
+    d.tempMin = Math.min(d.tempMin, temp);
+    d.wind = Math.max(d.wind, wind);
+
+    // Vejrsymbol: brug tidspunktet tættest på kl. 12 lokal tid
+    const next = entry.data.next_6_hours || entry.data.next_1_hours || entry.data.next_12_hours;
+    if (next && next.summary) {
+        const dist = Math.abs(date.getHours() + date.getMinutes() / 60 - 12);
+        if (dist < d.symbolDist) {
+            d.symbol = next.summary.symbol_code;
+            d.symbolDist = dist;
+        }
+    }
+});
+
+const dailyList = Object.values(dailyData).slice(0, 5);
             
             dailyList.forEach(day => {
                 const dayDiv = document.createElement('div');
