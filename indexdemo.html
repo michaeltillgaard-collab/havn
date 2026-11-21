@@ -1281,9 +1281,10 @@ const dailyList = Object.values(dailyData).slice(0, 5);
         }
         
                 // ==================== Hent indhold fra Google Sheet (JSONP) ====================
+                // ==================== Hent indhold fra Google Sheet (JSONP) ====================
         function fetchContent() {
-            // Dette er den SAMME URL som meddelelser, men vi tilføjer &type=content
-            const scriptUrl = 'https://script.google.com/macros/s/AKfycbzdoOKAtQkFGcIqsxvpjxV8eNmIYHdkPVoSJvpT5QSXFtMjSAAiUv0MgqitRyKojbt6bQ/exec?type=content'; 
+            // Grundlæggende URL til dit Apps Script
+            const baseScriptUrl = 'https://script.google.com/macros/s/AKfycbw083-8gqxaLO2ArStDzsW5oFymb5L39xfMyK6rlNfhhAYtMXjKZN5JBjDQ4sR8XKNhwg/exec'; 
             const callbackName = 'handleContent_' + Math.round(100000 * Math.random());
             
             window[callbackName] = function(contentData) {
@@ -1311,7 +1312,8 @@ const dailyList = Object.values(dailyData).slice(0, 5);
 
             const script = document.createElement('script');
             script.id = callbackName; 
-            script.src = scriptUrl + '&callback=' + callbackName; // Bemærk '&' fordi vi allerede har '?type=content'
+            // Bygger URL'en korrekt op: ?type=content&callback=...
+            script.src = baseScriptUrl + '?type=content&callback=' + callbackName;
             
             script.onerror = function() {
                 console.error('Fejl ved indlæsning af indhold via JSONP.');
