@@ -664,8 +664,8 @@
                 <div class="box-title">🏠 Perlen – Det åbne foreningshus</div>
                 <div class="slide-content" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
                     <div style="flex: 1;">
-                        <p><strong>Perlen</strong> er havnens hyggelige samlingspunkt og her finder du også havnekontoret.</p>
-                        <p>Bygningen har et opholdsrum og et køkken, som frit kan benyttes af både autocampere, gæstesejlere og andelshavere.</p>
+                        <p id="perlen_tekst_1"><strong>Perlen</strong> er havnens hyggelige samlingspunkt og her finder du også havnekontoret.</p>
+                        <p id="perlen_tekst_2">Bygningen har et opholdsrum og et køkken, som frit kan benyttes af både autocampere, gæstesejlere og andelshavere.</p>
                         <p>Brug gerne udekøkkenet og den store grill ved Perlen.</p>
                         <p>Betaling for ophold og faciliteter sker ved automaten i forbindelse med havnekontoret.</p>
                         <p style="margin-top: 0.5rem; color: #64748b;">
@@ -1363,11 +1363,11 @@ const dailyList = Object.values(dailyData).slice(0, 5);
             }
         }
         // ==================== Start ====================
-        document.addEventListener('DOMContentLoaded', function() {
+                document.addEventListener('DOMContentLoaded', function() {
             fetchNotices();
             fetchWeather();
             fetchWaterLevel();
-            fetchContent();
+            fetchContent(); // <-- Denne linje skal være der
         });
         
         setInterval(fetchWeather, 30 * 60 * 1000); 
