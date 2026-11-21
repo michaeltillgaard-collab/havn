@@ -583,7 +583,7 @@
                 <div class="box-title">⚓ Velkommen til Aarøsund Lystbådhavn</div>
                 <div class="slide-content" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
                     <div style="flex: 1;">
-                        <p><strong>Velkommen til Aarøsund Lystbådehavn</strong></p>
+                        <p id="velkommen_tekst"><strong>Velkommen til Aarøsund Lystbådehavn</strong></p>
                         <p>Havnen tilbyder en række faciliteter for både gæstesejlere, autocampere og fastliggere:</p>
                         <ul>
                             <li>💧 Vand og el ved pladserne. Vand er gratis. El kræver servicekode fra automaten for sejlere. 🚿 Gratis bad og toiletter</li>
@@ -1279,6 +1279,52 @@ const dailyList = Object.values(dailyData).slice(0, 5);
 
             document.body.appendChild(script);
         }
+        
+                // ==================== Hent indhold fra Google Sheet (JSONP) ====================
+        function fetchContent() {
+            // Dette er den SAMME URL som meddelelser, men vi tilføjer &type=content
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbzdoOKAtQkFGcIqsxvpjxV8eNmIYHdkPVoSJvpT5QSXFtMjSAAiUv0MgqitRyKojbt6bQ/exec?type=content'; 
+            const callbackName = 'handleContent_' + Math.round(100000 * Math.random());
+            
+            window[callbackName] = function(contentData) {
+                console.log("Indhold modtaget fra Google:", contentData);
+                
+                for (const key in contentData) {
+                    if (contentData.hasOwnProperty(key)) {
+                        const element = document.getElementById(key);
+                        if (element) {
+                            if (element.tagName.toLowerCase() === 'img') {
+                                element.src = contentData[key];
+                            } else {
+                                element.innerHTML = contentData[key];
+                            }
+                        }
+                    }
+                }
+                
+                const scriptElement = document.getElementById(callbackName);
+                if (scriptElement && scriptElement.parentNode) {
+                    scriptElement.parentNode.removeChild(scriptElement);
+                }
+                delete window[callbackName];
+            };
+
+            const script = document.createElement('script');
+            script.id = callbackName; 
+            script.src = scriptUrl + '&callback=' + callbackName; // Bemærk '&' fordi vi allerede har '?type=content'
+            
+            script.onerror = function() {
+                console.error('Fejl ved indlæsning af indhold via JSONP.');
+                const scriptElement = document.getElementById(callbackName);
+                if (scriptElement && scriptElement.parentNode) {
+                    scriptElement.parentNode.removeChild(scriptElement);
+                }
+                delete window[callbackName];
+            };
+
+            document.body.appendChild(script);
+        }
+        
         // ==================== Hent aktuel vandstand fra DMI ====================
         async function fetchWaterLevel() {
             try {
@@ -1320,7 +1366,8 @@ const dailyList = Object.values(dailyData).slice(0, 5);
         document.addEventListener('DOMContentLoaded', function() {
             fetchNotices();
             fetchWeather();
-            fetchWaterLevel(); // <-- Tilføj denne linje
+            fetchWaterLevel();
+            fetchContent();
         });
         
         setInterval(fetchWeather, 30 * 60 * 1000); 
