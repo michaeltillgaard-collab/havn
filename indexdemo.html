@@ -1229,13 +1229,15 @@ const dailyList = Object.values(dailyData).slice(0, 5);
             });
         }
 
-        // ==================== Hent meddelelser fra Google Sheet (JSONP) ====================
+                // ==================== Hent meddelelser fra Google Sheet (JSONP) ====================
         function fetchNotices() {
-            const scriptUrl = 'https://script.google.com/macros/s/AKfycbzdoOKAtQkFGcIqsxvpjxV8eNmIYHdkPVoSJvpT5QSXFtMjSAAiUv0MgqitRyKojbt6bQ/exec';
+            // Brug det link, du har testet i browseren (husk /exec i slutningen)
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbw083-8gqxaLO2ArStDzsW5oFymb5L39xfMyK6rlNfhhAYtMXjKZN5JBjDQ4sR8XKNhwg/exec'; 
             const callbackName = 'handleNotices_' + Math.round(100000 * Math.random());
             
+            // Definer den funktion, som Google kalder
             window[callbackName] = function(messages) {
-                console.log("Data modtaget fra Google:", messages);
+                console.log("Meddelelser modtaget:", messages);
                 
                 const listContainer = document.getElementById('noticeList');
                 if (listContainer) {
@@ -1253,6 +1255,7 @@ const dailyList = Object.values(dailyData).slice(0, 5);
                     console.error("Kunne ikke finde elementet med id 'noticeList'");
                 }
                 
+                // Ryd op
                 const scriptElement = document.getElementById(callbackName);
                 if (scriptElement && scriptElement.parentNode) {
                     scriptElement.parentNode.removeChild(scriptElement);
@@ -1262,6 +1265,7 @@ const dailyList = Object.values(dailyData).slice(0, 5);
 
             const script = document.createElement('script');
             script.id = callbackName; 
+            // Vi tilføjer callback-parameteren til URL'en
             script.src = scriptUrl + '?callback=' + callbackName;
             
             script.onerror = function() {
@@ -1279,17 +1283,13 @@ const dailyList = Object.values(dailyData).slice(0, 5);
 
             document.body.appendChild(script);
         }
-        
                 // ==================== Hent indhold fra Google Sheet (JSONP) ====================
-                // ==================== Hent indhold fra Google Sheet (JSONP) ====================
-        function fetchContent() {
-            // Grundlæggende URL til dit Apps Script
-            const baseScriptUrl = 'https://script.google.com/macros/s/AKfycbw083-8gqxaLO2ArStDzsW5oFymb5L39xfMyK6rlNfhhAYtMXjKZN5JBjDQ4sR8XKNhwg/exec'; 
+                function fetchContent() {
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbw083-8gqxaLO2ArStDzsW5oFymb5L39xfMyK6rlNfhhAYtMXjKZN5JBjDQ4sR8XKNhwg/exec';
             const callbackName = 'handleContent_' + Math.round(100000 * Math.random());
             
             window[callbackName] = function(contentData) {
-                console.log("Indhold modtaget fra Google:", contentData);
-                
+                console.log("Indhold modtaget:", contentData);
                 for (const key in contentData) {
                     if (contentData.hasOwnProperty(key)) {
                         const element = document.getElementById(key);
@@ -1302,7 +1302,6 @@ const dailyList = Object.values(dailyData).slice(0, 5);
                         }
                     }
                 }
-                
                 const scriptElement = document.getElementById(callbackName);
                 if (scriptElement && scriptElement.parentNode) {
                     scriptElement.parentNode.removeChild(scriptElement);
@@ -1312,8 +1311,7 @@ const dailyList = Object.values(dailyData).slice(0, 5);
 
             const script = document.createElement('script');
             script.id = callbackName; 
-            // Bygger URL'en korrekt op: ?type=content&callback=...
-            script.src = baseScriptUrl + '?type=content&callback=' + callbackName;
+            script.src = scriptUrl + '?type=content&callback=' + callbackName;
             
             script.onerror = function() {
                 console.error('Fejl ved indlæsning af indhold via JSONP.');
